@@ -1,0 +1,168 @@
+\documentclass{article}
+
+\usepackage[latin1]{inputenc}
+\usepackage[francais]{babel}
+\usepackage{url}
+\usepackage{fullpage}
+\usepackage{fancyhdr}
+\usepackage{cite}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{color}
+\pagestyle{fancy}
+\headheight=12pt
+\lhead{Algorithmes du monde r\'eel}
+\chead{}
+\rhead{Plugins C++}
+\renewcommand{\headrulewidth}{0.5pt}
+\lfoot{\today}
+\cfoot{}
+\rfoot{Master 2 Informatique semestre 1 - AMR}
+\renewcommand{\footrulewidth}{0.5pt}
+\selectfont
+
+\hoffset -0.21in
+\voffset -0.724in
+\textheight 23cm
+\headheight 0.8cm
+\headsep 1cm
+\topmargin 0in
+\textwidth 17.cm
+\parskip 10pt
+
+\title{Algorithmes du monde r\'eel\\Reductions de probl\`emes NP-Complets}
+\author{Descombe Herv\'e \and Desenne Nicolas \and Sellier Xavier}
+\begin{document}
+\maketitle
+\newpage
+\tableofcontents
+\newpage
+
+\section{Chemin et circuit Hamiltoniens}
+
+Pour r\'eduire ces probl\`emes, nous avons fait le choix de suivre les conseils indiqu\'es sur
+la feuille de TD et de consid\'erer des variables repr\'esentant la position i d'un sommet j
+dans un chemin (circuit) Hamiltonien. Nous allons consid\'erer tout d'abord le probl\`eme du
+chemin Hamiltonien, puis dans un second temps, nous nous pencherons sur celui du circuit,
+qui diff\`ere tr\`es peu au niveau de la r\'eduction.
+
+\subsection{Chemin Hamiltonien}
+
+\subsubsection{R\'eduction vers SAT}
+
+Dans un graphe, un chemin est Hamiltonien si et seulement s'il passe une seule fois par tous les sommets
+de ce graphe. Ainsi, soit \textit{n} le nombre de sommets d'un graphe \textit{G}. Si ce chemin passe une
+seule fois par tous les sommets, il va donc \^etre consitu\'e de \textit{n} sommets ; il y aura donc
+\textit{n} positions possibles. On consid\`ere $x_i,j$ la variable bool\'enne indiquant si le sommet
+\textit{j} est situ\'e \`a la position \textit{i} d'un tel chemin. Sur cette base, on peut d\'efinir un
+ensemble r\`egles permettant de sp\'ecifier \`a partir de variables bool\'eennes si un chemin est
+Hamiltonien :
+
+%1)
+%\[
+%	 \forall j\in V(G)\left( $x_{1j}$ \vee $x_{2j}$ \vee \ldots \vee $x_{nj}$ \right)
+%\]
+
+Cette premi\`ere r\`egle indique que chaque sommet est associ\'e \`a au moins une position dans le chemin.
+C'est une condition n\'ecessaire puisque le chemin Hamiltonien est cens\'e parcourir tous les sommets.
+
+2)% \forall i avec 1 <= k <= n, \big( $x_i,1$ \vee $x_i,2$ \vee ... \vee $x_i,n$ ) ;
+
+A l'inverse de la premi\`ere r\`egle, celle-ci indique que toute position dans un chemin Hamiltonien doit
+\^etre associ\'ee \`a au moins un sommet.
+
+3) %\forall i avec 1 <= i <= n, \forall j, k \in V(G) avec j \ne k, \big( \neg $x_i,j$ \vee \neg $x_i,k$ ) ;
+
+Cette r\`egle sp\'ecifie que deux sommets ne peuvent pas se trouver \`a la m\^eme position dans un chemin
+Hamiltonien.
+
+4)% \forall i avec 1 <= i < n, \exists j,k \in V(G) avec j \ne k et {j,k} \in E(G), \big( $x_i,j$ \wedge $x_i+1,k$ ) ;
+
+Cette r\`egle d\'etermine que pour toute position \textit{i} d'un chemin Hamiltonien, il existe un sommet adjacent \`a
+celui courant qui se trouve \`a la position \textit{i+1} du chemin. C'est cette derni\`ere r\`egle qui permet
+d\'eliminer beaucoup de cas dans lesquels on ne peut pas atteindre un sommet sans passer par ceux d\'ej\`a visit\'es
+(qui implique qu'il sont \`a une position inf\'erieure \`a la position courante). On peut remarquer que l'on n'a pas
+parmi ces quatre r\`egles de restriction explicite sur le fait qu'un m\^eme sommet peut se trouver \`a deux positions
+diff\'erentes. En fait, les r\`egles 1), 2) et 4) impliquent cette restriction : on a \textit{n} sommets et \textit{n}
+positions ; si on attribue deux positions diff\'erentes \`a un m\^eme sommet, on va se retrouver avec un chemin \`a
+\textit{n} positions mais \textit{n-1} sommets. Or, la r\`egle 4) pr\'ecise que pour chaque position \textit{k} de 1 \`a
+\textit{n}, il existe un successeur diff\'erent. Pour que cette condition soit respect\'ee, il faut donc qu'il y ait
+\textit{n} sommets distincts dans le chemin Hamiltonien. Le fait de ne pas expliciter cette r\`egle va en plus
+\^etre utile pour le cas du circuit Hamiltonien.\\
+
+Pour en revenir \`a cette quatri\`eme r\`egle, cette formulation ne convient pas pour une traduction triviale vers le
+format \textit{minisat} (qui prend des conjonctions de disjonctions). On va donc modifier la formule afin de pouvoir
+la traduire sans trop de difficult\'es en disjonction de variables bool\'eennes :
+
+4 bis)% \forall i avec 1 <= i <= n, \forall j,k \in V(G) avec {j,k} \notin E(G), \big( \net $x_i,j$ \vee \net $x_i+1,k$ ) ;
+
+Maintenant, on sp\'ecifie que si deux sommets ne sont pas adjacents, ils ne peuvent pas se trouver \`a deux positions
+cons\'ecutives dans le chemin.\\
+
+\subsubsection{Algorithme du programme}
+
+La fonction \textit{hamiltonian\_path} applique les r\`egles explicit\'ees ci-dessus sur notre matrice de bool\'eens
+repr\'esentant les ar\^etes entre les sommets. Il n'y a en fait que la quatri\`eme r\`egle qui explore la matrice,
+puisqu'il faut v\'erifier s'il existe une ar\^ete entre deux sommets. Nous pr\'ef\'erons ici expliquer la mani\`ere
+dont nous avons cod\'e les variables bool\'eennes pour les inclure dans le fichier destin\'e \`a \^etre utilis\'e
+par \textit{minisat}.\\
+
+Comme il y a \textit{n} positions et \textit{n} sommets, on va avoir \textit{$n \times n$} configurations possibles, soit
+\textit{$n \times n$} variables bool\'eennes dans notre fichier de sortie. On avait plusieurs possibilit\'es de coder
+un sommet \textit{j} \`a une position \textit{i}. Nous avons choisi la mani\`ere suivante :
+\begin{itemize}
+ \item  les \textit{n} premiers entiers codent les \textit{n} positions pour le sommet 1 ; par exemple, si l'entier \textit{2}
+est positif (soit que la variable qu'il repr\'esente est vraie), alors le sommet 1 se trouve \`a la deuxi\`eme position dans
+le chemin ; si l'entier est n\'egatif, alors il ne se trouve pas \`a cette position ;
+ \item  les entiers de \textit{n+1} \`a \textit{2n} codent les positions pour le sommet 2 ;
+ \item ...
+ \item pour un sommet k, ses positions sont repr\'esent\'ees par les entiers situ\'es dans l'intervalle [
+\textit{(k-1)*n+1} ; \textit{k*n}]. 
+\end{itemize}
+
+Typiquement, pour la premi\`ere r\`egle, on aura une premi\`ere ligne dans le fichier r\'esultat qui va signifier
+que le sommet 1 peut prendre au moins une des \textit{n} positions dans le chemin (pour un graphe de taille \textit{4} :
+\begin{verbatim}
+1 2 3 4 0
+\end{verbatim}
+
+L'algorithme de la fonction est d\'ecoup\'e en quatre parties distinctes correpondant \`a l'application des quatres r\`egles.
+Nous ne trouvons pas utile d'expliciter les autres d\'etails de l'impl\'ementation.
+
+\subsection{Tests et r\'esultats}
+
+Nous avons pu tester la validit\'e de nos r\`egles et de notre algorithme sur des graphes de petites tailles.
+% Voir pour ajouter des jeux de tests a executer directement.
+
+Nous avons fait des tests de charge. Pour un graphe de 100 sommets, le programme met moins d'une seconde \`a traduire le fichier
+d'entr\'ee en un nouveau fichier au format SAT. Pour un graphe de 1000 sommets, par contre, il n\'ecessite <A REMPLIR> secondes
+d\'ex\'ecution.
+
+\subsection{Circuit Hamiltonien}
+
+Le probl\`eme du circuit Hamiltonien est tr\`es proche de son pr\'ed\'ecesseur. Dans ce cas, on ne cherche plus un chemin, mais
+un cycle qui passe une seule fois par chaque sommet du graphe. Toutefois, on peut consid\'erer ce probl\`eme comme un cas
+particulier du chemin Hamiltonien \`a ceci pr\`es que les sommets situ\'es en premi\`ere et derni\`ere positions doivent \^etre
+adjacents. Ainsi, il suffit de rajouter cette r\`egle \`a l'ensemble d\'ej\`a d\'efinis. \textit{n} correspond toujours au
+nombre de sommets dans le graphe, soit au nombre de positions possibles.
+
+5)% \exists k,j \in V(G), {k,j} \in E(G) et \big( $x_1,j$ \wedge $x_n,k$ ) ;
+
+Encore une fois, cette formulation ne s'adapte pas \`a la transformation vers le format SAT. On reformule la r\`egle comme
+suit :
+
+5 bis) %\forall j,k \in V(G) avec {j,k} \notin E(G), \big(\net$x_1,j$ \vee \net $x_n,k$ ) ;
+
+On remarque cependant que cette r\`egle est un cas particulier de la r\`egle 4) du chemin Hamiltonien.\\
+
+Dans l'algorithme utilis\'e pour la r\'eduction, cela se traduit par un petit ajout \`a effectuer dans le traitement de
+la quatri\`eme r\`egle. La fonction \textit{hamiltonian\_circuit} code cet algorithme. C'est la m\^eme que celle
+du chemin Hamiltonien exception faite de l'ajout \`a effectuer, qui se traduit par deux lignes \`a rajouter dans le
+fichier SAT \`a chaque fois que deux sommets ne sont pas adjacents.
+
+Au niveau des tests,  on a l\`a-aussi test\'e sur des graphes de petites tailles, et en particulier sur des graphes qui
+poss\'edaient un plusieurs chemins Hamiltoniens mais pas de circuit.
+Nous n'avons pas jug\'e utile de proc\'eder \`a des tests de charge puisque la diff\'erence avec le probl\`eme pr\'ec\'edent
+provient de quelques op\'erations suppl\'ementaires s'ex\'ecutant en temps constant.
+
+\end{document}

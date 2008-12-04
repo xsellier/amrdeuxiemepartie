@@ -1,0 +1,22 @@
+Pour charger un graph nous avons implémenté un analyseur syntaxique
+qui va lire le fichier passé en premier argument du programme, le
+découper en arrêtes, ces arrêtes sont insérées dans un vecteur
+temporaire avant d'être stockés dans une matrice.
+
+La syntaxe à utiliser pour entrer un graph est assez simple. On peut
+soit entrer des listes d'arrêtes séparées par un espace ou un retour à
+la ligne. On peut aussi entrer des chemins séparés aussi par un espace
+ou un retour à la ligne. Mais surtout pas d'espace en fin de ligne.
+
+Voici un exemple de fichier de graph:\\
+0-1-2-3-4-5-6-7-8-9\\
+9-10-11-12-13 13-14\\
+
+Notre programme va lui même lancer minisat, analyser le résultat et
+afficher un résultat à l'écran. Il créé deux fichiers. Le fichier
+minisat.txt est le fichier contenant la réduction, c'est le fichier
+d'entrée de minisat. Le deuxième fichier, result.txt est le fichier de
+sortie de minisat. Le programme n'efface pas ces fichiers car, si
+l'utilisateur le souhaite, il est possible de rajouter l'inverse de la
+solution trouvée dans minisat.txt et de relancer minisat pour voir si
+il n'y a pas d'autres solutions.
