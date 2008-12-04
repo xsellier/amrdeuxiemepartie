@@ -1,0 +1,176 @@
+% -*- mode: latex; coding: latin-1-unix -*- %
+
+\section{Prototype}
+
+Voici l'algo récursif auquel j'ai pensé. La syntaxe n'est pas correcte.
+
+Voilà notre algorithme récursif :
+
+\bigskip
+map <key, iterator> graph;
+
+int[] couverture;
+
+int nb\_sommet = 0;
+
+\bigskip
+function booleen algo1(var noeud, nb\_fils:entiers){\\
+  booleen couvert = vrai;\\
+  Pour chaque fils du sommet \og noeud \fg faire\\
+     couvert *= algo1(nom\_du\_fils,degre\_du\_fils);\\
+  FindePour\\
+  Si couvert == faux faire\\
+     couvert = vrai;\\
+     couverture[nb\_sommet]=noeud;\\
+     nb\_sommet++;\\
+  FindeSi\\
+  Si degre\_du\_fils == O;\\
+    couvert = faux;\\
+  FindeSi\\
+  retourner ((noeud.nb\_de\_fils >= nb\_fils) + couvert);\\
+}
+
+\bigskip
+Exemple de fonctionnement de notre méthode sur notre graphe exemple.
+
+Prenons cet arbre :\\
+0-1-3\\
+|\\
+2-4-7\\
+|\\
+5\\
+|\\
+6
+
+\newpage
+Dans notre variable graph on aura donc :
+
+[0] -> [ 1 - 2 ]
+
+[1] -> [ 3 ]
+
+[2] -> [ 4 - 5]
+
+[3] -> null
+
+[4] -> [7]
+
+[5] -> [6]
+
+[6] -> null
+
+Voici les appels récursifs a notre méthode algo1 :
+
+algo1(0,0); // noeud 0 et il a 2 fils
+
+premier passage dans la boucle Pour :
+
+algo1(1,2); // noeud 1 et le noeud 0 a 2 fils
+
+> algo1(3,1); // noeud 3 et la noeud 1 a 1 fils
+
+>\ > on ne passe pas dans la boucle Pour (3 n'a pas de ils)
+
+>\ > Comme 3 n'a pas de fils on met couvert à \og faux \fg
+
+>\ > On renvoie \og faux \fg au processus appelant
+
+> retour au processus appelant // noeud 1
+
+> on sort de notre Pour
+
+> Couvert est maintenant à \og faux \fg
+
+> on met couvert à vrai
+
+> on ajoute le noeur 1 à la couverture de sommet
+
+> on incrémente nb\_sommet
+
+> on renvoie vrai au processus appelant
+
+retour au processus appelant // noeud 0
+
+couvert reste à \og vrai \fg
+
+deuxième tour de boucle
+
+algo1(2,2) // noeud 2 et le noeud 0 à 2 fils
+
+> Premier tour de boucle
+
+> algo1(4,2) // noeud 4 et le noeud 2 à deux fils
+
+>\ > Premier tour de boucle
+
+>\ > algo1(7,1) // noeud 7 et le noeud 4 a un fils
+
+>\ >\ > on ne passe pas dans la boucle Pour (7 n'a pas de fils)
+
+>\ >\ > Comme 7 n'a pas de fils on met couvert à \og faux \fg
+
+>\ >\ > On renvoie \og faux \fg au processus appelant
+
+>\ > retour au processus appelant // noeud 4
+
+>\ > couvert est maintenant à \og faux \fg
+
+>\ > on sort de notre boucle (car plus de fils)
+
+>\ > on met couvert à \og vrai \fg
+
+>\ > on ajoute le noeud 4 a notre couverture de sommet
+
+>\ > on incrémente nb\_sommet
+
+>\ > on renvoie \og vrai \fg au processus appelant
+
+> retour au processus appelant // noeud 2
+
+> couvert reste \og vrai \fg
+
+> Deuxieme tour de boucle
+
+> algo1(5,2) // noeud 5 et le noeud 2 a 2 fils
+
+>\ > Premier tour de boucle
+
+>\ > algo1(6,1) // noeud 6 et le noeud 5 a 1 fils
+
+>\ >\ > on ne passe pas dans la boucle Pour (6 n'a pas de fils)
+
+>\ >\ > Comme 6 n'a pas de fils on met couvert a faux
+
+>\ >\ > on renvoie \og faux \fg au processus appelant
+
+>\ > retour au processus appelant // noeud 5
+
+>\ > couvert est maintenant a \og faux \fg
+
+>\ > on sort de notre boucle (5 n'a plus de fils)
+
+>\ > on met couvert à \og vrai \fg
+
+>\ > on incrémente nb\_sommet
+
+>\ > on ajoute le noeud 5 à notre couverture de sommet
+
+>\ > on incrémente nb\_sommet
+
+>\ > on renvoie \og vrai \fg au processus appelant
+
+> retour au processus appelant // noeud 2
+
+> couvert reste a \og vrai \fg
+
+> on a parcouru tous les noeuds de 2 on sort de la boucle Pour
+
+> on renvoie \og vrai \fg au processus appelant
+
+retour au processus appelant // noeud 0
+
+couvert reste à \og vrai \fg
+
+On a parcouru tous les fils du noeud 0 on sort de la boucle Pour.
+
+Notre algo est terminé et la couverture de sommet se trouve dans notre variable \og couverture \fg
