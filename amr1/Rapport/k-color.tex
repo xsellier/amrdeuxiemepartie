@@ -1,0 +1,17 @@
+Le problème de la k-coloriabilité, permet de déterminer si un graphe
+peut être colorié avec k couleurs sans que deux sommets voisins aient
+la même couleur.
+
+Pour réduire ce problème à SAT, il faut autant de variables que de
+sommets multiplié par le nombre de couleurs. 
+
+Il faut que pour chaque sommet i et j tels que i et j soient voisins,
+Ai -> \neg Aj, Ai signifiant que le sommet i a la couleur A. L'implication
+peut être remplacé par un ou ce qui donne \neg Ai ou \neg Aj. 
+
+Il faut aussi qu'un sommet n'ai qu'une seule couleur donc pour chaque
+sommet i, Ai -> \neg Bi et  Ai -> \neg Ci ... Comme pour l'implication
+précédente pour être testée on remplace l'implication par \neg Ai ou Bi.
+
+Il faut aussi qu'un sommet ai une couleur donc on a pour chaque sommet
+i Ai ou Bi ou Ci ...
