@@ -13,7 +13,7 @@
 using namespace std;
 
 /*
- * Test the assertion, if true, exit the programme with a message.
+ * Test the assertion, if true, exit the program with a message.
  */
 void
 perror_and_exit_whenever(int assertion, string msg)
