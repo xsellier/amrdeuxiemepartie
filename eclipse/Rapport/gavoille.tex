@@ -1,0 +1,43 @@
+% -*- mode: latex; coding: latin-1-unix -*- %
+
+\section{gavoille}
+
+\begin{verbatim}
+
+int size;
+
+liste couverture;
+int[] pere;
+int[] nbFils;
+int racine;
+
+function void algo(){
+// on part du principe que la liste ne peut pas être vide.
+int i := couverture.premier();
+Si i := racine;
+  alors fin algo;
+
+int j := pere[i];
+//il n'est pas possible qu'un sommet autre que la racine n'ait pas de
+père.
+int k := pere[j];
+//on retire i de la liste de feuilles.
+couverture.supprimerEnTete();
+// i est une feuille, on ajoute son père dans la couverture.
+couverture.ajouterEnTete(j);
+//On "coupe" l'arrête entre i et son père, j.
+pere[j] := 0;
+//On "coupe" l'arrête entre j et son père, k.
+pere[i] := 0;
+
+Si k != 0
+   alors nbFils[k]--;
+         Si nbFils[k] = 0
+            alors couverture.ajouterEnTete(k);
+
+
+}
+ 
+
+\end{verbatim}
+
