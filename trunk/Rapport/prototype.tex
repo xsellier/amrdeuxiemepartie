@@ -4,7 +4,7 @@
 
 Voici l'algo récursif auquel j'ai pensé. La syntaxe n'est pas correcte.
 
-Voilà notre algorithme récursif :
+Voilà notre algorithme récursif pour la couverture de sommet :
 
 \begin{verbatim}
 
@@ -21,12 +21,11 @@ function int algo1(var noeud:entiers){
   FindePour
   Si couvert == 1 faire
      couvert = 2;
-  Sinon
-     Si couvert != 0 faire
-       couvert = 1;
-       couverture[nb_sommet]=noeud;
-       nb_sommet++;
-     FindeSi
+  FindeSi
+  Si couvert > 2 faire
+     couvert = 1;
+     couverture[nb_sommet]=noeud;
+     nb_sommet++;
   FindeSi
   Si couvert == 0 faire
      couvert = 1;
@@ -112,6 +111,42 @@ algo1(0);
 |- nb_sommet = 4;
 |- retourne couvert = 1;
 
+\end{verbatim}
+
+Voici un second algo pour la couverture d'arête cette fois ci :
+
+\begin{verbatim}
+
+map <key, iterator> graph;
+
+int[] couverture;
+
+int nb_sommet = 0;
+
+function int algo2(var noeud:entiers){
+  int couvert = 1;
+  Pour chaque fils du sommet  noeud  faire
+     couvert *= algo2(nom_du_fils);
+  FindePour
+  Si couvert == 1 faire
+     couvert = 2;
+  Sinon 
+     Si couvert >= 2 faire
+       couvert = 1;
+       couverture[nb_sommet]=noeud;
+       nb_sommet++;
+     FindeSi
+  FindeSi
+  Si couvert == 0 faire
+     couvert = 1;
+     couverture[nb_sommet]=noeud;
+     nb_sommet++;
+  FindeSi
+  Si nb_fils_du_noeud == O;
+    couvert = 0;
+  FindeSi
+  retourner couvert;
+}
 \end{verbatim}
 
 P.S : je n'étais pas à poil devant mon ordi lorsque j'ai pensé a cette petite rectification de l'algo. (même si l'heure était avancé dans la nuit).
