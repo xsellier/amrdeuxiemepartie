@@ -1,0 +1,19 @@
+
+\section{Algorithme approch\'e sur des graphes}
+
+Soit \textit{G} un graphe connexe non orient\'e. Soit \textit{T} l'arbre orient\'e obtenu par une recherche en profondeur sur \textit{G}.
+Si \textit{G} est connexe, alors \textit{$\forall u,v \in V(G), \exists chemin de u a v$}. Cela implique que tous les sommets
+feront partie de l'arbre \textit{T}.\\
+
+Soit \textit{T} l'arbre orient\'e correspondant \`a une arborescence possible de \textit{G}. Tout sommet est soit une feuille,
+soit un sommet. Or, dans un arbre, les relations de p\`ere \`a fils (c'est-\`a-dire les ar\^etes entre deux sommets) sont soient
+des relations de type noeud/noeud, ou bien noeud/feuille (repr\'ecisons que la notion de noeud \'equivaut \`a un sommet non feuille).
+Donc, si l'on retourne l'ensemble des noeuds de l'arbre, comme couverture de cet arbre, alors toutes les relations dans l'arbre (soient
+toutes les ar\^etes) sont couvertes. Cet algorithme retourne bien une couverture du graphe \textit{G}.
+
+\subsection{Algorithme bas\'e sur un couplage maximal}
+
+
+
+\subsection{Algorithme bas\'e sur une recherche en profondeur}
+
