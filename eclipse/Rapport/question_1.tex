@@ -1,0 +1,58 @@
+
+\section{For\^ets et couvertures}
+
+Soit \textit{F} une for\^et. Soit \textit{uv} une ar\^ete de cette for\^et et le degr\'e de \textit{v} est 1.\\
+
+Soit \textit{U} un ensemble de sommets consituant une couverture de \textit{F} de taille minimale. Si \textit{U}
+couvre \textit{F}, alors \textit{U} couvre l'ar\^ete \textit{uv}, ce qui implique que \textit{u} ou bien \textit{v}
+appartient \`a \textit{U}.
+
+Nous travaillons dans une for\^et, une union disjointe d'arbres, ce qui implique que chaque sommet est soit un noeud,
+soit une feuille. Chaque feuille n'a qu'un seul p\`ere, par d\'efinition, ce qui signifie qu'un sommet feuille a
+obligatoirement un degr\'e \'egal \`a 1. Consid\'erons maintenant le cas inverse. Si un sommet a un degr\'e \'egal \`a
+1, alors soit c'est une feuille de l'arbre, soit \c{c}a en est la racine. Dans les deux cas, un tel sommet ne peut
+couvrir que lui-m\^eme et son p\`ere (ou son unique fils pour le deuxi\`eme cas). Le sommet \textit{v} consid\'er\'e
+plus haut, constitue un tel sommet\\
+
+Supposons que \textit{U} ne contient pas \textit{u}. Alors elle contient \textit{v}, et l'ar\^ete \textit{uv} est
+couverte. Toutefois, le sommet \textit{u} poss\`ede probablement d'autres ar\^etes incidentes. Si \textit{F} n'est pas
+limit\'ee \`a l'ar\^ete \textit{uv}, puisque \textit{v} est de degr\'e 1, alors \textit{u} poss\`ede d'autres ar\^etes
+incidentes (du point de vue d'un arbre, \textit{u} poss\`ede d'autres fils et/ou a un p\`ere). Imaginons que \textit{u}
+poss\`ede un autre fils feuille autre que \textit{v}, que l'on appelle \textit{w}. Alors pour que l'ar\^ete \textit{uw}
+soit couverte, il faut que soit \textit{u}, soit \textit{w} appartienne \`a \textit{U}. Hors, si \texit{u} n'appartient
+pas d\'ej\`a \textit{U}, alors il faut ajouter un sommet (soit \textit{u}, soit \textit{w}) \`a la couverture, ce qui
+augmente sa taille.\\
+
+Supposons maintenant que l'ar\^ete \textit{uv} n'est plus couverte par \textit{v}, mais par \textit{u}. Appelons \textit{U'}
+cette couverture. Nous n'avons pas modif\'e la taille de la couverture, donc \textit{U'} est bien de taille minimale.
+Reconsid\'erons maintenant cette ar\^ete \textit{uw}. Dans le cas pr\'esent, \textit{u} couvre d\'esormais cette ar\^ete.
+Il existe donc bien une couverture de taille minimale qui contient \textit{u} mais pas \textit{v}.
+
+
+\section{Algorithme lin\'eaire}
+
+C'est l'algorithme auquel j'avais pens\'e (Herv\'e).
+Il parcourt les sommets en profondeur une seule fois. Le seul b\'emol est qu'il faut au pr\'ealable avoir pars\'e le gengraph.
+Si \`c{c}a fait partie de l'algo, ben c'est un peu mort (\`a moins de l'adapter).
+
+
+\begin{verbatim}
+couvArbre (r : entier, liste_couv : liste_d_entiers) : entier {
+
+  booleen couvrant := faux ;
+  
+  pour chaque fils de r {
+    entier s := fils(r);
+    si nombre_de_fils (s) = 0  // si s est une feuille
+      couvrant := vrai;        // r doit faire partie de la couverture
+    sinon
+      si (non couvArbre(s), liste_couv)    //Si s n'est pas une feuille, on regarde s'il fait partie de la couverture.
+        couvrant := vrai;                  //Si ce n'est pas le cas, alors r doit couvrir l'arete rs, puisque s ne le fait pas
+  }
+  
+  si (couvrant := vrai)
+    ajouter(list_couv, r);
+  retourner couvrant;  
+}
+\end{verbatim}
+
