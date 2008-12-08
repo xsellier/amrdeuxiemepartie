@@ -11,9 +11,59 @@ des relations de type noeud/noeud, ou bien noeud/feuille (repr\'ecisons que la n
 Donc, si l'on retourne l'ensemble des noeuds de l'arbre, comme couverture de cet arbre, alors toutes les relations dans l'arbre (soient
 toutes les ar\^etes) sont couvertes. Cet algorithme retourne bien une couverture du graphe \textit{G}.
 
-\subsection{Algorithme bas\'e sur un couplage maximal}
+
+\subsection{Algorithme bas\'e sur le couplage maximum}
 
 
+\subsection{Algorithme bas\'e sur la recherche en profondeur}
 
-\subsection{Algorithme bas\'e sur une recherche en profondeur}
+(Voici l'algorithme auquel j'ai pens\'e. Je ne l'ai pas impl\'ement\'e. Je laisse \c{c}a \`a Nico ;-)
+(Attention, s\'equence nostalgie, j'ai fait un peut d'exalgo, mais c'est tellement casse-couille que c'est m\'elang\'e \`a
+du C/C++)\\
 
+\begin{verbatim}
+parcoursProfondeur(int r, vector<list<int>> & list_succ, vector<bool> & visited):vide
+  visited[r] := vrai;
+  pour toute arete incidente a r faire
+    s := voisin[r];                 //Voir comment on va faire pour connaitre les voisins depuis gengraph.
+                                    //Peut-etre parser directement ici.
+    si (visited[s] = faux) alors
+      ajouter(list_succ[r], s);
+      parcoursProfondeur(s, list_succ, visited);
+    finsi
+  finpour
+fin
+
+
+couvProfondeur(vector<list<int>> & list_succ):liste_de sommets(reference)
+  liste_couv : liste_de_sommets
+  pour chaque sommet r de list_succ
+    si (list_succ[r] != vide)
+      ajouter(liste_couv, r);
+    finsi
+  finpour
+  retourner liste_couv;
+fin
+\end{verbatim}
+
+(La liste de sommets sera bien s\^ur une liste d'entiers.)
+
+Pour ce qui est de la complexit\'e, la proc\'edure de parcours en profondeur va \^etre en \textit{$O(2*E(G))$} (\textit{E(G)} \'etant le nombre
+d'ar\^etes du graphe \textit{G}). En effet, pour un sommet \textit{s}, on regarde chaque voisin. Si ce voisin (disons \textit{v}) n'a pas \'et\'e
+visit\'e, on explore celui-ci avant d'en finir avec \textit{s}. Comme on examine chaque voisin de chaque sommet, on va explorer les
+voisins de \textit{v}, et on va donc retomber sur \textit{s}. Comme \textit{s} a \'et\'e marqu\'e comme visit\'e, on ne va pas le r\'eexplorer,
+mais cette suite d'op\'erations \'equivaut \`a visiter deux fois l'ar\^ete \textit{sv}. En appliquant ce raisonnement \`a toutes les ar\^etes,
+on obtient donc une complexit\'e d'ordre \textit{$O(2*E(G))$}. Hors, dans le cas le plus co\^uteux o\^u \textit{G} est un graphe parfait,
+il va contenir \textit{$n-1$} ar\^etes \`a visiter pour le premier sommet, puis \textit{$n-2$} pour le deuxi\`eme, et ainsi de suite jusqu'au
+dernier sommet. Le nombre d'ar\^etes correspond alors au calcul de la suite des \textit{$n-1$} premiers entiers. On peut alors \'ecrire :
+\textit{$ E(G) = ( n*(n-1)) / 2 $}. On obtient donc une complexit\'e de \textit{$O(n*(n-1))$} (puisqu'on parcourt l'\'equivalent du double
+du nombre d'ar\^etes).\\
+
+La fonction \textit{couvProfondeur} parcourt le vecteur de sommets (de taille le nombre de sommets, soit\textit{n}), et se contente de mettre
+dans une liste les sommets non-feuille, qui feront partie de la couverture. Cette fonction a donc une complexit\'e de \textit{$O(n)$}.\\
+
+La complexit\'e de l'algorithme est donc de l'ordre de \textit{$O( n*(n-1) + n )$}, soit \textit{$O(n^2)$}.
+(Attention hypoth\`ese dans laquelle on ne compte pas le temps de calcul des voisins de chaque sommet, \`a moins qu'il soit fait directement
+dans la proc\'edure de parcours en profondeur.)\\
+(J'avouerai que j'ai un doute du fait d'obtenir un algo en temps polynomial, mais c'est peut-etre \c{c}a apr\`es tout, puisqu'on est sur des
+graphes quelconques.)\\
