@@ -153,27 +153,36 @@ void depth_first_search(bool** matrix, int size, int* cover) {
 	j = i + 1;
 	cover[0] = 0; // on initialise le père, la racine.
 	do {
-		if (matrix[i][j]) { 		// si le noeud i a un fils
-			block=0;
-			matrix[i][j]=0;
-			if(cover[j]==-1){
+		if (matrix[i][j]) { // si le noeud i a un fils
+			block = 0;
+			matrix[i][j] = 0;
+			if (cover[j] == -1) {
 				cover[j] = i;
 				i = j;
-				j=0; 				// important pour bien vérifier tous les fils
+				j = 0; // important pour bien vérifier tous les fils
 				nb_vertex++;
 			} else {
-				j++;				// pour ne pas modifier un noeud déjà parcouru
+				j++; // pour ne pas modifier un noeud déjà parcouru
 			}
 		} else {
 			j++;
 			if (j >= size) {
 				i = cover[i];
 				j = i + 1;
-				if(i == cover[i]) 	// dans le cas ou l'on bouclerait sur le même noeud
-					block++;		// il y a des sommets isolés dans ce cas la.
+				if (i == cover[i]) // dans le cas ou l'on bouclerait sur le même noeud
+					block++; // il y a des sommets isolés dans ce cas la.
 			}
 		}
-	} while (nb_vertex < size && block <=2);
+	} while (nb_vertex < size && block <= 2);
+}
+
+void tree_cover(int size, int* tree, bool* cover) {
+	for (int i = 0; i < size; ++i) {
+		if (tree[i] != -1)
+			cover[tree[i]] = 1; // met a 1 tous les noeuds faisant partis de la couverture
+		else
+			cover[tree[i]] = 0;
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -188,9 +197,13 @@ int main(int argc, char* argv[]) {
 	int size = graph_init(argv[1], edge) + 1;
 	int father[size];
 	int sons[size];
-	int* cover;
+	int* tree;
 
-	cover = new int[size];
+	tree = new int[size];
+
+	bool* cover;
+
+	cover = new bool[size];
 
 	bool** matrix;
 
@@ -201,11 +214,16 @@ int main(int argc, char* argv[]) {
 
 	fill_matrix(matrix, edge, size);
 
-	depth_first_search(matrix, size, cover);
+	depth_first_search(matrix, size, tree);
 
-	for(int i = 0; i<size;++i)
+	tree_cover(size, tree, cover);
+
+	for (int i = 0; i < size; ++i)
 		cout << "Le noeud " << i << " a pour père " << cover[i] << endl;
-
+	for (int i = 0; i < size; ++i) {
+		if (cover[i])
+			cout << "Le noeud " << i << " fait parti de la couverture " << endl;
+	}
 	exit(EXIT_SUCCESS);
 
 }
