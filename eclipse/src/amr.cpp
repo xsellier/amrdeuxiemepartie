@@ -144,7 +144,7 @@ void usage() {
  */
 
 void depth_first_search(bool** matrix, int size, int* cover) {
-	int i, j;
+	int i, j, k;
 	int nb_vertex = 1; // nb de sommet dans la couverture;
 	for (i = 0; i < size; ++i)
 		cover[i] = -1;
@@ -165,17 +165,23 @@ void depth_first_search(bool** matrix, int size, int* cover) {
 		} else {
 			j++;
 			if (j >= size) {
-				i = cover[i];
-				j = i + 1;
-				if (i == cover[i]) // dans le cas ou l'on bouclerait sur le même noeud
-					for(int k=0; k<size; ++k){ // on reherche un sommet isolé
-						if(cover[k]==-1){ // on coninue notre traitement
+				if(i != cover[i]){ // le noeud a été totallement parcouru
+					i = cover[i]; // on remonte a son père
+					j = 0;
+				}
+				else { // dans le cas ou l'on bouclerait sur le même noeud
+					k=0;
+					while(k<size){
+						if(cover[k]==-1){ // on cherche un noeud non traité
 							nb_vertex++;
 							cover[k]=k;
 							i=k;
 							j=0;
+							k=size; // pour casser la boucle
 						}
+						k++;
 					}
+				}
 			}
 		}
 	} while (nb_vertex < size);
