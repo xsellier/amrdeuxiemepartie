@@ -13,7 +13,7 @@
 using namespace std;
 
 /*
- * Test the assertion, if true, exit the programme with a message.
+ * Test the assertion, if true, exit the program with a message.
  */
 void perror_and_exit_whenever(int assertion, string msg) {
 	if (assertion) {
@@ -134,45 +134,62 @@ void usage() {
 }
 
 /*
-bool** tmp_matrix;
+ bool** tmp_matrix;
 
-	tmp_matrix = new bool*[size];
-	
-	for (int i = 0; i < size; ++i)
-		tmp_matrix[i] = new bool[size];
-	
-*/
+ tmp_matrix = new bool*[size];
 
-void depth_first_search(bool** matrix, int size){
-	int i = 0;
+ for (int i = 0; i < size; ++i)
+ tmp_matrix[i] = new bool[size];
+
+ */
+
+void depth_first_search(bool** matrix, int size, int* cover) {
+	int i, j, block;
 	int nb_vertex = 0; // nb de sommet dans la couverture;
-	int cover[size];
-	for(int i = 0;i< size; ++i)
-		cover[i]=0;
+	for (i = 0; i < size; ++i)
+		cover[i] = -1;
+	i = 0;
+	block = 0;
+	j = i + 1;
+	cover[0] = 0; // on initialise le père, la racine.
 	do {
-		
-	} while(nb_vertex < size);
-		
-	exit(EXIT_SUCCESS);	
+		if (matrix[i][j]) { // si le noeud i a un fils
+			block=0;
+			matrix[i][j]=0;
+			if(cover[j]==-1){
+				cover[j] = i;
+				i = j;
+				nb_vertex++;
+			} else {
+				j++;
+			}
+		} else {
+			j++;
+			if (j >= size) {
+				i = cover[i];
+				j = i + 1;
+				if(i == cover[i]) 	// dans le cas ou l'on bouclerait sur le même noeud
+					block++;		// il y a des sommets isolés dans ce cas la.
+			}
+		}
+	} while (nb_vertex < size && block <=2);
 }
 
 int main(int argc, char* argv[]) {
-	if (argc < 3)
+	if (argc < 2)
 		usage();
 
-	//fichier contenant le graph que l'on va passer à minisat.
-	string minisat = "./minisat.txt";
-	//fichier où minisat va remplir le résultat
-	string result = "./result.txt";
 	//vecteur servant à stoquer les arrêtes
 	vector<pair<int, int> > edge;
 	//vecteur servant à stoker les valeurs des variables renvoyées par minisat.
 	vector<bool> variables;
 
 	int size = graph_init(argv[1], edge) + 1;
-	
 	int father[size];
 	int sons[size];
+	int* cover;
+
+	cover = new int[size];
 
 	bool** matrix;
 
@@ -183,10 +200,11 @@ int main(int argc, char* argv[]) {
 
 	fill_matrix(matrix, edge, size);
 
-	ofstream file(minisat.c_str());
-	
-	depth_first_search(matrix,size);
-	
+	depth_first_search(matrix, size, cover);
+
+	for(int i = 0; i<size;++i)
+		cout << "Le noeud " << i << " a pour père " << cover[i] << endl;
+
 	exit(EXIT_SUCCESS);
-	
+
 }
