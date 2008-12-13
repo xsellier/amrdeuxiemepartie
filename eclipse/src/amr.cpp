@@ -153,15 +153,16 @@ void depth_first_search(bool** matrix, int size, int* cover) {
 	j = i + 1;
 	cover[0] = 0; // on initialise le père, la racine.
 	do {
-		if (matrix[i][j]) { // si le noeud i a un fils
+		if (matrix[i][j]) { 		// si le noeud i a un fils
 			block=0;
 			matrix[i][j]=0;
 			if(cover[j]==-1){
 				cover[j] = i;
 				i = j;
+				j=0; 				// important pour bien vérifier tous les fils
 				nb_vertex++;
 			} else {
-				j++;
+				j++;				// pour ne pas modifier un noeud déjà parcouru
 			}
 		} else {
 			j++;
