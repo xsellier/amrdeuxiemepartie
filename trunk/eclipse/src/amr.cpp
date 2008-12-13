@@ -188,8 +188,10 @@ void depth_first_search(bool** matrix, int size, int* cover) {
 }
 
 void tree_cover(int size, int* tree, bool* cover) {
+	for (int i = 0; i < size; ++i) // initialisation
+		cover[i]=0;
 	for (int i = 0; i < size; ++i)
-			cover[tree[i]] = 1; // met a 1 tous les noeuds faisant partis de la couverture
+		cover[tree[i]] = 1; // met a 1 tous les noeuds faisant partis de la couverture
 }
 
 int main(int argc, char* argv[]) {
