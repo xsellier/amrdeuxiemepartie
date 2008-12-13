@@ -144,17 +144,15 @@ void usage() {
  */
 
 void depth_first_search(bool** matrix, int size, int* cover) {
-	int i, j, block;
-	int nb_vertex = 0; // nb de sommet dans la couverture;
+	int i, j;
+	int nb_vertex = 1; // nb de sommet dans la couverture;
 	for (i = 0; i < size; ++i)
 		cover[i] = -1;
 	i = 0;
-	block = 0;
 	j = i + 1;
 	cover[0] = 0; // on initialise le père, la racine.
 	do {
 		if (matrix[i][j]) { // si le noeud i a un fils
-			block = 0;
 			matrix[i][j] = 0;
 			if (cover[j] == -1) {
 				cover[j] = i;
@@ -170,10 +168,17 @@ void depth_first_search(bool** matrix, int size, int* cover) {
 				i = cover[i];
 				j = i + 1;
 				if (i == cover[i]) // dans le cas ou l'on bouclerait sur le même noeud
-					block++; // il y a des sommets isolés dans ce cas la.
+					for(int k=0; k<size; ++k){ // on reherche un sommet isolé
+						if(cover[k]==-1){ // on coninue notre traitement
+							nb_vertex++;
+							cover[k]=k;
+							i=k;
+							j=0;
+						}
+					}
 			}
 		}
-	} while (nb_vertex < size && block <= 2);
+	} while (nb_vertex < size);
 }
 
 void tree_cover(int size, int* tree, bool* cover) {
@@ -219,7 +224,7 @@ int main(int argc, char* argv[]) {
 	tree_cover(size, tree, cover);
 
 	for (int i = 0; i < size; ++i)
-		cout << "Le noeud " << i << " a pour père " << cover[i] << endl;
+		cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
 	for (int i = 0; i < size; ++i) {
 		if (cover[i])
 			cout << "Le noeud " << i << " fait parti de la couverture " << endl;
