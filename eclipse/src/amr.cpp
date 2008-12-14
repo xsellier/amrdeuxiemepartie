@@ -155,7 +155,6 @@ usage()
   exit(EXIT_SUCCESS);
 }
 
-//nico: créer les tableau père, nb_fils, et la liste de feuilles
 void
 depth_first_search(bool** matrix, int size, int* cover)
 {
@@ -258,8 +257,33 @@ tree_vc(int father[], int nb_sons[], list<int> leaf, list<int> vertex_cover)
       if (nb_sons[k] == 0)
         leaf.push_front(k);
     }
-
   tree_vc(father, nb_sons, leaf, vertex_cover);
+}
+
+void
+init_tree_vc(int father[], int nb_sons[], list<int> leaf, int size, vector<
+    pair<int, int> > edge)
+{
+
+  for (int i = 0; i < size; ++i)
+    {
+      father[i] = -1;
+      nb_sons = 0;
+    }
+
+  leaf.clear();
+
+  int v_size = edge.size();
+
+  for (int i = 0; i < v_size; ++i)
+    {
+      father[edge.at(i).second] = edge.at(i).first;
+      nb_sons[edge.at(i).first]++;
+    }
+
+  for (int i = 0; i < size; ++i)
+    if (nb_sons == 0)
+      leaf.push_front(i);
 }
 
 int
@@ -274,8 +298,11 @@ main(int argc, char* argv[])
   vector<bool> variables;
 
   int size = graph_init(argv[1], edge) + 1;
+  // je commente parce que cdt ne sait pas faire la différence entre un warnig
+  // et une erreur et ce rouge me gonfle
   int father[size];
   int sons[size];
+  list<int> leaf;
   int* tree;
 
   tree = new int[size];
