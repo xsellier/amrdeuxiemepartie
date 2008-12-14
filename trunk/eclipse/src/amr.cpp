@@ -1,4 +1,5 @@
 #include <iostream>
+#include <list>
 #include <stdlib.h>
 #include <fstream>
 #include <sys/stat.h>
@@ -15,56 +16,67 @@ using namespace std;
 /*
  * Test the assertion, if true, exit the program with a message.
  */
-void perror_and_exit_whenever(int assertion, string msg) {
-	if (assertion) {
-		perror(msg.c_str());
-		exit(EXIT_FAILURE);
-	}
+void
+perror_and_exit_whenever(int assertion, string msg)
+{
+  if (assertion)
+    {
+      perror(msg.c_str());
+      exit(EXIT_FAILURE);
+    }
 }
 
 /*
  * This function copy into a matrix all edges which are in the vector v
  * nb_node is the number of node and so the size of the matrix
  */
-void fill_matrix(bool** matrix, vector<pair<int, int> > &v, int nb_node) {
-	for (int i = 0; i < nb_node; ++i)
-		for (int j = 0; j < nb_node; ++j)
-			matrix[i][j] = false;
+void
+fill_matrix(bool** matrix, vector<pair<int, int> > &v, int nb_node)
+{
+  for (int i = 0; i < nb_node; ++i)
+    for (int j = 0; j < nb_node; ++j)
+      matrix[i][j] = false;
 
-	//size of the vector and number of edges
-	int v_size = v.size();
+  //size of the vector and number of edges
+  int v_size = v.size();
 
-	for (int i = 0; i < v_size; ++i) {
-		matrix[v.at(i).first][v.at(i).second] = true;
-		matrix[v.at(i).second][v.at(i).first] = true;
-	}
+  for (int i = 0; i < v_size; ++i)
+    {
+      matrix[v.at(i).first][v.at(i).second] = true;
+      matrix[v.at(i).second][v.at(i).first] = true;
+    }
 }
 
 /*
  * Returns the highest node in the vector
  */
-int max_node(vector<pair<int, int> > &v) {
-	int max = 0;
-	int size = v.size();
+int
+max_node(vector<pair<int, int> > &v)
+{
+  int max = 0;
+  int size = v.size();
 
-	for (int i = 0; i < size; ++i) {
-		if (v[i].first > max)
-			max = v[i].first;
-		if (v[i].second > max)
-			max = v[i].second;
-	}
+  for (int i = 0; i < size; ++i)
+    {
+      if (v[i].first > max)
+        max = v[i].first;
+      if (v[i].second > max)
+        max = v[i].second;
+    }
 
-	return max;
+  return max;
 }
 
 /*
  * This function insert in the vector the edge contained in the string
  */
-void insert_edge(string edge, vector<pair<int, int> > &v) {
-	size_t pos = edge.find_first_of('-');
-	int first_node = atoi(edge.substr(0, pos).c_str());
-	int second_node = atoi(edge.substr(pos + 1, edge.length()).c_str());
-	v.push_back(pair<int, int> (first_node, second_node));
+void
+insert_edge(string edge, vector<pair<int, int> > &v)
+{
+  size_t pos = edge.find_first_of('-');
+  int first_node = atoi(edge.substr(0, pos).c_str());
+  int second_node = atoi(edge.substr(pos + 1, edge.length()).c_str());
+  v.push_back(pair<int, int> (first_node, second_node));
 }
 
 /*
@@ -72,167 +84,226 @@ void insert_edge(string edge, vector<pair<int, int> > &v) {
  * it can contains 0-1 or 0-1-2-6. And insert edges in the vector with the function
  * insert_edge.
  */
-void edge_spliter(string edge, vector<pair<int, int> > &v) {
-	size_t prec = 0;
-	size_t found;
-	size_t old_found = 0;
+void
+edge_spliter(string edge, vector<pair<int, int> > &v)
+{
+  size_t prec = 0;
+  size_t found;
+  size_t old_found = 0;
 
-	found = edge.find_first_of("-");
+  found = edge.find_first_of("-");
 
-	if (found != string::npos) {
-		old_found = found;
-		found = edge.find_first_of("-", found + 1);
+  if (found != string::npos)
+    {
+      old_found = found;
+      found = edge.find_first_of("-", found + 1);
 
-		while (found != string::npos) {
-			insert_edge(edge.substr(prec, found - prec), v);
-			prec = old_found + 1;
-			old_found = found;
-			found = edge.find_first_of("-", found + 1);
-		}
+      while (found != string::npos)
+        {
+          insert_edge(edge.substr(prec, found - prec), v);
+          prec = old_found + 1;
+          old_found = found;
+          found = edge.find_first_of("-", found + 1);
+        }
 
-		found = edge.substr(0, edge.find_last_of("-")).find_last_of("-");
+      found = edge.substr(0, edge.find_last_of("-")).find_last_of("-");
 
-		if (found == string::npos)
-			prec = 0;
-		else
-			prec = found + 1;
+      if (found == string::npos)
+        prec = 0;
+      else
+        prec = found + 1;
 
-		insert_edge(edge.substr(prec), v);
-	}
-	//else isolate_edge => don't care
+      insert_edge(edge.substr(prec), v);
+    }
+  //else isolate_edge => don't care
 }
 
 /*
  * This function open the file witch contains the graph, and split it
  * in lines or in set of edges.
  */
-int graph_init(char* filename, vector<pair<int, int> > &v) {
-	ifstream file(filename, ios::in);
-	string line;
+int
+graph_init(char* filename, vector<pair<int, int> > &v)
+{
+  ifstream file(filename, ios::in);
+  string line;
 
-	perror_and_exit_whenever(!file, "Erreur à l'ouverture du fichier");
+  perror_and_exit_whenever(!file, "Erreur à l'ouverture du fichier");
 
-	while (getline(file, line, '\n')) {
-		size_t prec = 0;
-		size_t found;
+  while (getline(file, line, '\n'))
+    {
+      size_t prec = 0;
+      size_t found;
 
-		found = line.find_first_of(" ");
-		while (found != string::npos) {
-			edge_spliter(line.substr(prec, found - prec), v);
-			prec = found + 1;
-			found = line.find_first_of(" ", prec);
-		}
-		edge_spliter(line.substr(prec), v);
-	}
+      found = line.find_first_of(" ");
+      while (found != string::npos)
+        {
+          edge_spliter(line.substr(prec, found - prec), v);
+          prec = found + 1;
+          found = line.find_first_of(" ", prec);
+        }
+      edge_spliter(line.substr(prec), v);
+    }
 
-	file.close();
-	return max_node(v);
+  file.close();
+  return max_node(v);
 }
 
-void usage() {
-	exit(EXIT_SUCCESS);
+void
+usage()
+{
+  exit(EXIT_SUCCESS);
 }
 
-/*
- bool** tmp_matrix;
-
- tmp_matrix = new bool*[size];
-
- for (int i = 0; i < size; ++i)
- tmp_matrix[i] = new bool[size];
-
- */
-
-void depth_first_search(bool** matrix, int size, int* cover) {
-	int i, j, k;
-	int nb_vertex = 1; // nb de sommet dans la couverture;
-	for (i = 0; i < size; ++i)
-		cover[i] = -1;
-	i = 0;
-	j = i + 1;
-	cover[0] = 0; // on initialise le père, la racine.
-	do {
-		if (matrix[i][j]) { // si le noeud i a un fils
-			matrix[i][j] = 0;
-			if (cover[j] == -1) {
-				cover[j] = i;
-				i = j;
-				j = 0; // important pour bien vérifier tous les fils
-				nb_vertex++;
-			} else {
-				j++; // pour ne pas modifier un noeud déjà parcouru
-			}
-		} else {
-			j++;
-			if (j >= size) {
-				if(i != cover[i]){ // le noeud a été totallement parcouru
-					i = cover[i]; // on remonte a son père
-					j = 0;
-				}
-				else { // dans le cas ou l'on bouclerait sur le même noeud
-					k=0;
-					while(k<size){
-						if(cover[k]==-1){ // on cherche un noeud non traité
-							nb_vertex++;
-							cover[k]=k;
-							i=k;
-							j=0;
-							k=size; // pour casser la boucle
-						}
-						k++;
-					}
-				}
-			}
-		}
-	} while (nb_vertex < size);
+//nico: créer les tableau père, nb_fils, et la liste de feuilles
+void
+depth_first_search(bool** matrix, int size, int* cover)
+{
+  int i, j, k;
+  int nb_vertex = 1; // nb de sommet dans la couverture;
+  for (i = 0; i < size; ++i)
+    cover[i] = -1;
+  i = 0;
+  j = i + 1;
+  cover[0] = 0; // on initialise le père, la racine.
+  do
+    {
+      if (matrix[i][j])
+        { // si le noeud i a un fils
+          matrix[i][j] = 0;
+          if (cover[j] == -1)
+            {
+              cover[j] = i;
+              i = j;
+              j = 0; // important pour bien vérifier tous les fils
+              nb_vertex++;
+            }
+          else
+            {
+              j++; // pour ne pas modifier un noeud déjà parcouru
+            }
+        }
+      else
+        {
+          j++;
+          if (j >= size)
+            {
+              if (i != cover[i])
+                { // le noeud a été totallement parcouru
+                  i = cover[i]; // on remonte a son père
+                  j = 0;
+                }
+              else
+                { // dans le cas ou l'on bouclerait sur le même noeud
+                  k = 0;
+                  while (k < size)
+                    {
+                      if (cover[k] == -1)
+                        { // on cherche un noeud non traité
+                          nb_vertex++;
+                          cover[k] = k;
+                          i = k;
+                          j = 0;
+                          k = size; // pour casser la boucle
+                        }
+                      k++;
+                    }
+                }
+            }
+        }
+    }
+  while (nb_vertex < size);
 }
 
-void tree_cover(int size, int* tree, bool* cover) {
-	for (int i = 0; i < size; ++i) // initialisation
-		cover[i]=0;
-	for (int i = 0; i < size; ++i)
-		cover[tree[i]] = 1; // met a 1 tous les noeuds faisant partis de la couverture
+void
+tree_cover(int size, int tree[], bool* cover)
+{
+  for (int i = 0; i < size; ++i)
+    // initialisation
+    cover[i] = false;
+  for (int i = 0; i < size; ++i)
+    cover[tree[i]] = true; // met a 1 tous les noeuds faisant partis de la couverture
 }
 
-int main(int argc, char* argv[]) {
-	if (argc < 2)
-		usage();
+void
+tree_cover(int size, int tree[], list<int> cover)
+{
+  for (int i = 0; i < size; ++i)
+    cover.push_front(tree[i]);// met a 1 tous les noeuds faisant partis de la couverture
+}
 
-	//vecteur servant à stoquer les arrêtes
-	vector<pair<int, int> > edge;
-	//vecteur servant à stoker les valeurs des variables renvoyées par minisat.
-	vector<bool> variables;
+void
+tree_vc(int father[], int nb_sons[], list<int> leaf, list<int> vertex_cover)
+{
+  // on prend la première feuille de libre.
+  int i = leaf.front();
 
-	int size = graph_init(argv[1], edge) + 1;
-	int father[size];
-	int sons[size];
-	int* tree;
+  if (i == 0)
+    return;
 
-	tree = new int[size];
+  int j = father[i];
+  int k = father[j];
 
-	bool* cover;
+  // je retire la feuille pour ne pas la retraiter
+  leaf.pop_front();
 
-	cover = new bool[size];
+  vertex_cover.push_front(j);
 
-	bool** matrix;
+  father[i] = 0;
+  father[j] = 0;
 
-	matrix = new bool*[size];
+  if (k != 0)
+    {
+      nb_sons[k]--;
+      if (nb_sons[k] == 0)
+        leaf.push_front(k);
+    }
 
-	for (int i = 0; i < size; ++i)
-		matrix[i] = new bool[size];
+  tree_vc(father, nb_sons, leaf, vertex_cover);
+}
 
-	fill_matrix(matrix, edge, size);
+int
+main(int argc, char* argv[])
+{
+  if (argc < 2)
+    usage();
 
-	depth_first_search(matrix, size, tree);
+  //vecteur servant à stoquer les arrêtes
+  vector<pair<int, int> > edge;
+  //vecteur servant à stoker les valeurs des variables renvoyées par minisat.
+  vector<bool> variables;
 
-	tree_cover(size, tree, cover);
+  int size = graph_init(argv[1], edge) + 1;
+  int father[size];
+  int sons[size];
+  int* tree;
 
-	for (int i = 0; i < size; ++i)
-		cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
-	for (int i = 0; i < size; ++i) {
-		if (cover[i])
-			cout << "Le noeud " << i << " fait parti de la couverture " << endl;
-	}
-	exit(EXIT_SUCCESS);
+  tree = new int[size];
+
+  bool* cover;
+
+  cover = new bool[size];
+
+  bool** matrix;
+
+  matrix = new bool*[size];
+
+  for (int i = 0; i < size; ++i)
+    matrix[i] = new bool[size];
+
+  fill_matrix(matrix, edge, size);
+
+  depth_first_search(matrix, size, tree);
+
+  tree_cover(size, tree, cover);
+
+  for (int i = 0; i < size; ++i)
+    cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
+  for (int i = 0; i < size; ++i)
+    {
+      if (cover[i])
+        cout << "Le noeud " << i << " fait parti de la couverture " << endl;
+    }
+  exit(EXIT_SUCCESS);
 
 }
