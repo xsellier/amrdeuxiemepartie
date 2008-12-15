@@ -228,50 +228,54 @@ void
 tree_cover(int size, int tree[], list<int> cover)
 {
   for (int i = 0; i < size; ++i)
-    cover.push_front(tree[i]);// met a 1 tous les noeuds faisant partis de la couverture
+    cover.push_front(tree[i]);// met les noeuds faisant partie de la couverture dans la liste
 }
 
 void
-tree_vc(int father[], int nb_sons[], list<int> leaf, list<int> vertex_cover)
+tree_vc(int father[], int nb_sons[], list<int> &leaf, bool vertex_cover[])
 {
-  // on prend la première feuille de libre.
+  //on prend la première feuille de libre.
   int i = leaf.front();
 
-  if (i == 0)
+  //on considère que 0 est toujours la racine car il faut bien en choisir un
+  if (i == 0 || leaf.size() <= 0)
     return;
 
   int j = father[i];
   int k = father[j];
-
   // je retire la feuille pour ne pas la retraiter
   leaf.pop_front();
 
-  vertex_cover.push_front(j);
+  vertex_cover[j] = true;
 
-  father[i] = 0;
-  father[j] = 0;
+  //on casse l'arête entre i et j
+  father[i] = -1;
+  //on casse l'arête entre j et k
+  father[j] = -1;
 
-  if (k != 0)
+  //si j n'a pas de père
+  if (k != -1)
     {
       nb_sons[k]--;
+      //si k devient une feuille
       if (nb_sons[k] == 0)
         leaf.push_front(k);
     }
+
+  //on rappelle la fonction
   tree_vc(father, nb_sons, leaf, vertex_cover);
 }
 
 void
-init_tree_vc(int father[], int nb_sons[], list<int> leaf, int size, vector<
-    pair<int, int> > edge)
+init_tree_vc(int father[], int nb_sons[], bool vertex_cover[], list<int> &leaf,
+    int size, vector<pair<int, int> > edge)
 {
-
   for (int i = 0; i < size; ++i)
     {
       father[i] = -1;
-      nb_sons = 0;
+      nb_sons[i] = 0;
+      vertex_cover[i] = false;
     }
-
-  leaf.clear();
 
   int v_size = edge.size();
 
@@ -282,14 +286,14 @@ init_tree_vc(int father[], int nb_sons[], list<int> leaf, int size, vector<
     }
 
   for (int i = 0; i < size; ++i)
-    if (nb_sons == 0)
+    if (nb_sons[i] == 0)
       leaf.push_front(i);
 }
 
 int
 main(int argc, char* argv[])
 {
-  if (argc < 2)
+  if (argc < 3)
     usage();
 
   //vecteur servant à stoquer les arrêtes
@@ -298,39 +302,63 @@ main(int argc, char* argv[])
   vector<bool> variables;
 
   int size = graph_init(argv[1], edge) + 1;
-  // je commente parce que cdt ne sait pas faire la différence entre un warnig
-  // et une erreur et ce rouge me gonfle
-  int father[size];
-  int sons[size];
+
   list<int> leaf;
-  int* tree;
+  list<int> vc;
+  list<int>::iterator vc_iterator;
 
-  tree = new int[size];
+  int pb = atoi(argv[2]);
 
-  bool* cover;
-
-  cover = new bool[size];
-
-  bool** matrix;
-
-  matrix = new bool*[size];
-
-  for (int i = 0; i < size; ++i)
-    matrix[i] = new bool[size];
-
-  fill_matrix(matrix, edge, size);
-
-  depth_first_search(matrix, size, tree);
-
-  tree_cover(size, tree, cover);
-
-  for (int i = 0; i < size; ++i)
-    cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
-  for (int i = 0; i < size; ++i)
+  switch (pb)
     {
-      if (cover[i])
-        cout << "Le noeud " << i << " fait parti de la couverture " << endl;
-    }
-  exit(EXIT_SUCCESS);
+  case 1:
+    {
+      int father[size];
+      int sons[size];
+      bool vertex_cover[size];
 
+      init_tree_vc(father, sons, vertex_cover, leaf, size, edge);
+      tree_vc(father, sons, leaf, vertex_cover);
+
+      for (int i = 0; i < size; ++i)
+        if (vertex_cover[i])
+          vc.push_front(i);
+
+      cout << "Les sommets suivants sont dans la couverture : ";
+      for (vc_iterator = vc.begin(); vc_iterator != vc.end(); ++vc_iterator)
+        cout << *vc_iterator << " ";
+
+      cout << endl;
+
+      break;
+    }
+  case 2:
+    {
+      int* tree;
+      tree = new int[size];
+      bool* cover;
+      cover = new bool[size];
+      bool** matrix;
+      matrix = new bool*[size];
+
+      for (int i = 0; i < size; ++i)
+        matrix[i] = new bool[size];
+
+      fill_matrix(matrix, edge, size);
+      depth_first_search(matrix, size, tree);
+      tree_cover(size, tree, cover);
+
+      for (int i = 0; i < size; ++i)
+        cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
+
+      for (int i = 0; i < size; ++i)
+        {
+          if (cover[i])
+            cout << "Le noeud " << i << " fait partie de la couverture " << endl;
+        }
+      break;
+    }
+    }
+
+  exit(EXIT_SUCCESS);
 }
