@@ -7,7 +7,6 @@ Voici l'algo récursif auquel j'ai pens\'e. La syntaxe n'est pas correcte.
 Voilà notre algorithme r\'ecursif pour la couverture de sommet :
 
 \begin{verbatim}
-
 map <key, iterator> graph;
 
 int[] couverture;
@@ -74,7 +73,6 @@ Dans notre variable graphe on aura donc :
 Déroulement de notre algorithme :
 
 \begin{verbatim}
-
 algo1(0);
 |- algo1(1);
 |  |- algo1(3);
@@ -110,7 +108,6 @@ algo1(0);
 |- couverture[3] = 0;
 |- nb_sommet = 4;
 |- retourne couvert = 1;
-
 \end{verbatim}
 
 Voici un second algo pour la couverture d'ar\^ete cette fois ci :
@@ -148,5 +145,4 @@ function int algo2(var noeud:entiers){
   retourner couvert;
 }
 \end{verbatim}
-
 P.S : je n'\'etais pas à poil devant mon ordi lorsque j'ai pens\'e a cette petite rectification de l'algo (m\^eme si l'heure était avanc\'ee dans la nuit).

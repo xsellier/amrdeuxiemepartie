@@ -1,5 +1,5 @@
 
-\section{Algorithme approch\'e sur des graphes}
+\section{Algorithme 2-approch\'e sur des graphes}
 
 Soit \textit{G} un graphe connexe non orient\'e. Soit \textit{T} l'arbre orient\'e obtenu par une recherche en profondeur sur \textit{G}.
 Si \textit{G} est connexe, alors \textit{$\forall u,v \in V(G), \exists chemin de u a v$}. Cela implique que tous les sommets
@@ -14,19 +14,29 @@ toutes les ar\^etes) sont couvertes. Cet algorithme retourne bien une couverture
 
 \subsection{Algorithme bas\'e sur le couplage maximum}
 
+Le but de cet algorithme est de calculer un ensemble d'ar\^etes (que l'on appelle \textit{M} tel qu'aucune d'entre elles n'ait une
+extr\'emit\'e en commun. L'autre particularit\'e est qu'on ne peut pas ajouter d'ar\^etes \`a cet ensemble sans que la premi\`ere
+propri\'et\'e \'enonc\'ee juste avant ne devienne fausse. Ainsi, si on ne peut pas rajouter d'ar\^etes \`a cet ensemble, cela siginifie
+que pour chaque ar\^ete n'appartenant pas \`a \textit{M}, l'une des deux extr\'emit\'es est incluse dans \textit{M}. Soit \textit{U} les
+extr\'emit\'es des ar\^etes appartenant \`a \textit{M}. Si une ar\^ete appartient \`a \textit{M}, alors elle est couverte par ses
+deux extr\'emit\'es. Si elle n'y appartient pas, alors elle est couverte par l'une de ses deux extr\'emit\'es. Donc, \textit{U}
+est bien \'equivalent \`a une couverture de sommets.
+
+Notre algorithme de couplage, consultable dans le fichier source, se contente de parcourir la liste des ar\^etes du graphe. Pour une ar\^ete
+donn\'ee, si aucune de ses extr\'emit\'es n'appartient \`a la couverture actuelle, alors on les ins\`ere dedans. Si l'une des deux extr\'emit\'es
+y appartient d\'ej\`a, alors on n'ins\`ere rien du tout. La complexit\'e en temps de calcul est tributaire du nombre total d'ar\^etes.
 
 \subsection{Algorithme bas\'e sur la recherche en profondeur}
 
-(Voici l'algorithme auquel j'ai pens\'e. Je ne l'ai pas impl\'ement\'e. Je laisse \c{c}a \`a Nico ;-)
-(Attention, s\'equence nostalgie, j'ai fait un peut d'exalgo, mais c'est tellement casse-couille que c'est m\'elang\'e \`a
-du C/C++)\\
+Nous avons trouv\'e deux algorithmes qui donnent le m\^eme r\'esultat
+mais de diff\'erentes mani\`eres. Nous pr\'esentons l'algorithme qui suit
+puisque l'autre est consultable depuis le fichier source.
 
 \begin{verbatim}
 parcoursProfondeur(int r, vector<list<int>> & list_succ, vector<bool> & visited):vide
   visited[r] := vrai;
   pour toute arete incidente a r faire
-    s := voisin[r];                 //Voir comment on va faire pour connaitre les voisins depuis gengraph.
-                                    //Peut-etre parser directement ici.
+    s := voisin[r];
     si (visited[s] = faux) alors
       ajouter(list_succ[r], s);
       parcoursProfondeur(s, list_succ, visited);
@@ -46,8 +56,6 @@ couvProfondeur(vector<list<int>> & list_succ):liste_de sommets(reference)
 fin
 \end{verbatim}
 
-(La liste de sommets sera bien s\^ur une liste d'entiers.)
-
 Pour ce qui est de la complexit\'e, la proc\'edure de parcours en profondeur va \^etre en \textit{$O(2*E(G))$} (\textit{E(G)} \'etant le nombre
 d'ar\^etes du graphe \textit{G}). En effet, pour un sommet \textit{s}, on regarde chaque voisin. Si ce voisin (disons \textit{v}) n'a pas \'et\'e
 visit\'e, on explore celui-ci avant d'en finir avec \textit{s}. Comme on examine chaque voisin de chaque sommet, on va explorer les
@@ -62,8 +70,7 @@ du nombre d'ar\^etes).\\
 La fonction \textit{couvProfondeur} parcourt le vecteur de sommets (de taille le nombre de sommets, soit\textit{n}), et se contente de mettre
 dans une liste les sommets non-feuille, qui feront partie de la couverture. Cette fonction a donc une complexit\'e de \textit{$O(n)$}.\\
 
-La complexit\'e de l'algorithme est donc de l'ordre de \textit{$O( n*(n-1) + n )$}, soit \textit{$O(n^2)$}.
-(Attention hypoth\`ese dans laquelle on ne compte pas le temps de calcul des voisins de chaque sommet, \`a moins qu'il soit fait directement
-dans la proc\'edure de parcours en profondeur.)\\
-(J'avouerai que j'ai un doute du fait d'obtenir un algo en temps polynomial, mais c'est peut-etre \c{c}a apr\`es tout, puisqu'on est sur des
-graphes quelconques.)\\
+La complexit\'e de l'algorithme est donc de l'ordre de \textit{$O( n*(n-1) + n )$}, soit \textit{$O(n^2)$}.\\
+
+Pour l'algorithme que nous avons impl\'ement\'e, la complexit\'e est
+\'egalement en O($n^{2}$).
