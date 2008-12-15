@@ -2,7 +2,7 @@
 \section{Algorithme 2-approch\'e sur des graphes}
 
 Soit \textit{G} un graphe connexe non orient\'e. Soit \textit{T} l'arbre orient\'e obtenu par une recherche en profondeur sur \textit{G}.
-Si \textit{G} est connexe, alors \textit{$\forall u,v \in V(G), \exists chemin de u a v$}. Cela implique que tous les sommets
+Si \textit{G} est connexe, alors \textit{$\forall$ u,v $\in$ V(G), $\exists$ chemin de u a v}. Cela implique que tous les sommets
 feront partie de l'arbre \textit{T}.\\
 
 Soit \textit{T} l'arbre orient\'e correspondant \`a une arborescence possible de \textit{G}. Tout sommet est soit une feuille,
@@ -64,7 +64,7 @@ mais cette suite d'op\'erations \'equivaut \`a visiter deux fois l'ar\^ete \text
 on obtient donc une complexit\'e d'ordre \textit{$O(2*E(G))$}. Hors, dans le cas le plus co\^uteux o\^u \textit{G} est un graphe parfait,
 il va contenir \textit{$n-1$} ar\^etes \`a visiter pour le premier sommet, puis \textit{$n-2$} pour le deuxi\`eme, et ainsi de suite jusqu'au
 dernier sommet. Le nombre d'ar\^etes correspond alors au calcul de la suite des \textit{$n-1$} premiers entiers. On peut alors \'ecrire :
-\textit{$ E(G) = ( n*(n-1)) / 2 $}. On obtient donc une complexit\'e de \textit{$O(n*(n-1))$} (puisqu'on parcourt l'\'equivalent du double
+\textit{ E(G) = $\frac{n*(n-1)}{2} $}. On obtient donc une complexit\'e de \textit{$O(n*(n-1))$} (puisqu'on parcourt l'\'equivalent du double
 du nombre d'ar\^etes).\\
 
 La fonction \textit{couvProfondeur} parcourt le vecteur de sommets (de taille le nombre de sommets, soit\textit{n}), et se contente de mettre
