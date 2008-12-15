@@ -27,32 +27,3 @@ Supposons maintenant que l'ar\^ete \textit{uv} n'est plus couverte par \textit{v
 cette couverture. Nous n'avons pas modif\'e la taille de la couverture, donc \textit{U'} est bien de taille minimale.
 Reconsid\'erons maintenant cette ar\^ete \textit{uw}. Dans le cas pr\'esent, \textit{u} couvre d\'esormais cette ar\^ete.
 Il existe donc bien une couverture de taille minimale qui contient \textit{u} mais pas \textit{v}.
-
-
-\section{Algorithme lin\'eaire}
-
-C'est l'algorithme auquel j'avais pens\'e (Herv\'e).
-Il parcourt les sommets en profondeur une seule fois. Le seul b\'emol est qu'il faut au pr\'ealable avoir pars\'e le gengraph.
-Si \`c{c}a fait partie de l'algo, ben c'est un peu mort (\`a moins de l'adapter).
-
-
-\begin{verbatim}
-couvArbre (r : entier, liste_couv : liste_d_entiers) : entier {
-
-  booleen couvrant := faux ;
-  
-  pour chaque fils de r {
-    entier s := fils(r);
-    si nombre_de_fils (s) = 0  // si s est une feuille
-      couvrant := vrai;        // r doit faire partie de la couverture
-    sinon
-      si (non couvArbre(s), liste_couv)    //Si s n'est pas une feuille, on regarde s'il fait partie de la couverture.
-        couvrant := vrai;                  //Si ce n'est pas le cas, alors r doit couvrir l'arete rs, puisque s ne le fait pas
-  }
-  
-  si (couvrant := vrai)
-    ajouter(list_couv, r);
-  retourner couvrant;  
-}
-\end{verbatim}
-
