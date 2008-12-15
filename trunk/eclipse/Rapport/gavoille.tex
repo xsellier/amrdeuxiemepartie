@@ -2,10 +2,26 @@
 
 \section{Algorithme r\'ecursif couverture taille minimale}
 
+Le principe de cet algorithme est assez simple. Nous avons une liste
+de feuilles, une liste contenant les sommets appartenant à la
+couverture, un tableau contenant les p\`eres des sommets, un tableau
+contenant le nombre de fils des sommets, et enfin la racine de
+l'arbre.
+
+Cet algorithme est de complexit\'e lin\'eaire. Cet algorithme n'a pas
+besoin de savoir quel sommet est voisin d'un autre, il faut juste
+savoir qui est p\`ere de qui. Cet algorithme se finit quand la seule feuille
+restante est la racine, cet algo va d\'etruire l'arbre au fur et à
+mesure de son d\'eroulement.
+
+On commence par prendre une feuille, on cherche son grand p\`ere. Un
+sommet a toujours un p\`ere, sauf la racine, donc on se passe de la
+v\'érification du p\`ere. On coupe l'ar\^ete entre i et son p\`ere, et
+entre le p\`ere et le grand p\`ere et on ajoute le p\`ere à la
+couverture. Enfin si k est devenu une feuille on le rajoute \'a la lise
+de feuilles.
+
 \begin{verbatim}
-
-int size;
-
 liste feuilles;
 liste couverture;
 int[] pere;
@@ -39,7 +55,5 @@ Si k != 0
 algo();
 
 }
- 
-
 \end{verbatim}
 
