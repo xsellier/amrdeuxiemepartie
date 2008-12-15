@@ -290,6 +290,24 @@ init_tree_vc(int father[], int nb_sons[], bool vertex_cover[], list<int> &leaf,
       leaf.push_front(i);
 }
 
+void
+couplage(vector<pair<int, int> > edge, bool cover[], int size)
+{
+  for (int i = 0; i < size; ++i)
+    cover[i] = false;
+
+  int v_size = edge.size();
+
+  for (int i = 0; i < v_size; ++i)
+    {
+      if (!cover[edge.at(i).first] && !cover[edge.at(i).second])
+        {
+          cover[edge.at(i).first] = true;
+          cover[edge.at(i).second] = true;
+        }
+    }
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -354,8 +372,20 @@ main(int argc, char* argv[])
       for (int i = 0; i < size; ++i)
         {
           if (cover[i])
-            cout << "Le noeud " << i << " fait partie de la couverture " << endl;
+            cout << "Le noeud " << i << " fait partie de la couverture "
+                << endl;
         }
+      break;
+    }
+  case 3:
+    {
+      bool cover[size];
+      couplage(edge, cover, size);
+
+      for (int i = 0; i < size; ++i)
+        if (cover[i])
+          cout << "Le noeud " << i << " fait partie de la couverture " << endl;
+
       break;
     }
     }
