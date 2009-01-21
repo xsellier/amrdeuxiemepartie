@@ -1,0 +1,56 @@
+% -*- mode: latex; coding: latin-1-unix -*- %
+
+\documentclass[12pt]{beamer}
+\usepackage[latin1]{inputenc}
+\usepackage{multimedia}
+\usepackage{pgf}
+\usepackage{xcolor}
+\usetheme{Darmstadt}
+%\usetheme{PaloAlto}
+
+\definecolor{silver}{RGB}{100,150,50}
+%\setbeamercolor{structure}{fg=green!65!black}
+\setbeamertemplate{background canvas}[vertical shading]%
+%[top=silver,bottom=white]
+%\textcolor{silver}{quelle jolie couleur}
+
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>
+    \frametitle{Plan}
+    \tableofcontents[currentsection, hideothersubsections]
+  \end{frame}
+}
+
+\logo{\includegraphics[height=1.0cm]{bx1logo}}
+
+\title{Algorithmes du Monde Réel}
+\author[]
+{
+    Hervé Descombe\\
+    Nicolas Desenne\\
+    Xavier Sellier
+}
+\institute{Université de Bordeaux 1 - UFR Informatique}
+\date{Master 2 - Génie logiciel - Semestre 1 - 2008/2009}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Plan}
+  \tableofcontents %[pausesections]
+\end{frame}
+
+
+\section{Réductions}
+\input{reductions}
+
+
+\section{Conclusion}
+\input{conclusion}
+
+\end{document}
