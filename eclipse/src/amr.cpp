@@ -366,26 +366,28 @@ main(int argc, char* argv[])
       depth_first_search(matrix, size, tree);
       tree_cover(size, tree, cover);
 
-      for (int i = 0; i < size; ++i)
-        cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
-
+      //      for (int i = 0; i < size; ++i)
+      //  cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
+      cout << "Le(s) noeud(s) fait/font parti(s) de la couverture" << endl;
       for (int i = 0; i < size; ++i)
         {
           if (cover[i])
-            cout << "Le noeud " << i << " fait partie de la couverture "
-                << endl;
+            cout << i << " ";
         }
+      cout << endl;
+      
       break;
     }
   case 3:
     {
       bool cover[size];
       couplage(edge, cover, size);
-
+      cout << "Le(s) noeud(s) fait/font parti(s) de la couverture" << endl;
       for (int i = 0; i < size; ++i)
         if (cover[i])
-          cout << "Le noeud " << i << " fait partie de la couverture " << endl;
-
+          cout << i << " ";
+      cout << endl;
+      
       break;
     }
     }
