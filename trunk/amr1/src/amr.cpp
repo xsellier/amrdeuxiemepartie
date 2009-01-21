@@ -67,6 +67,15 @@ max_node(vector<pair<int, int> > &v)
 }
 
 /*
+ * This function insert an isolated edge
+ */
+void
+insert_isolated_edge(string edge, vector<pair<int, int> > &v)
+{
+  v.push_back(pair<int, int> (atoi(edge.c_str()), atoi(edge.c_str())));
+}
+
+/*
  * This function insert in the vector the edge contained in the string
  */
 void
@@ -114,7 +123,8 @@ edge_spliter(string edge, vector<pair<int, int> > &v)
 
       insert_edge(edge.substr(prec), v);
     }
-  //else isolate_edge => don't care
+  else
+    insert_isolated_edge(edge, v);
 }
 
 /*
@@ -232,97 +242,60 @@ k_color(bool** matrix, int size, int k, ofstream &file)
   file.close();
 }
 
-/*
- * locate higher clique in a matrix and write clauses into minisat.txt
- */
 void
-clique(bool** matrix, int size, ofstream &file)
+clique(bool **matrix, int size, int wanted_size, ofstream &file)
 {
+  ostringstream result;
 
-  int nb_clauses = 1;
-  int matrice[size];
-  int nb_clauses_test = 1;
+  int position;
+  int nb_clause = 0;
 
-  ostringstream clauses;
-  clauses.clear();
-
-  // reach matrix
-  for (int i = 0; i < size; ++i)
+  //Each position is associated with at least one node
+  for (position = 0; position < wanted_size; ++position)
     {
+      for (int i = 0; i < size; ++i)
+        result << position * size + i + 1 << " ";
+
+      result << "0\n";
+      nb_clause++;
+    }
+
+  //Two nodes can't got the same position
+  for (position = 0; position < wanted_size; ++position)
+    for (int i = 0; i < size; ++i)
       for (int j = i + 1; j < size; ++j)
         {
-          // if there no edge between vertex i and j.
-          if (!matrix[i][j])
-            {
-              // put "-(i+1) -(j+1) 0" in clauses
-              clauses << -1 * (i + 1) << " " << -1 * (j + 1) << " 0" << endl;
-              nb_clauses++;
-            }
+          result << -(position * size + i + 1) << " " << -(position * size + j
+              + 1) << " 0\n";
+          nb_clause++;
         }
-    }
 
-  clauses.flush();
-  file.flush();
-  clauses.clear();
-  for (int i = 1; i < size - 1; ++i)
-    nb_clauses_test = nb_clauses_test + i;
-  //cout << nb_clauses_test << " " << nb_clauses << endl;
-  if (nb_clauses_test != nb_clauses)
-    {
-      // fill clauses with each Clique possibilities for a matrix bigger than 3
-      for (int i = 0; i < size; ++i)
+  //One node can't have two different positions
+  for (int i = 0; i < size; ++i)
+    for (position = 0; position < wanted_size; ++position)
+      for (int l = position + 1; l < wanted_size; ++l)
         {
-          matrice[i] = i + 1;
+          result << -(position * size + i + 1) << " " << -(l * size + i + 1)
+              << " 0\n";
+          nb_clause++;
         }
-      for (int i = 0; i < size; ++i)
-        {
-          matrice[i] = matrice[i] * -1;
-          for (int j = (i + 1); j < size; ++j)
-            {
-              matrice[j] = matrice[j] * -1;
-              for (int i = 0; i < size; ++i)
-                {
-                  clauses << matrice[i] << " ";
-                }
-              clauses << "0" << endl;
-              nb_clauses++;
-              matrice[j] = matrice[j] * -1;
-            }
-          matrice[i] = matrice[i] * -1;
-        }
-    }
-  else
-    {
-      // fill clauses with each Clique possibilities for a matrix' size 3.
-      for (int i = 0; i < size; ++i)
-        {
-          clauses << i + 1 << " ";
-        }
-      clauses << "0" << endl;
-      nb_clauses++;
-      for (int pos = 0; pos < size; ++pos)
-        {
-          for (int j = 0; j < size; ++j)
-            {
-              if (j == pos)
-                {
-                  clauses << -1 * (j + 1) << " ";
-                }
-              else
-                {
-                  clauses << j + 1 << " ";
-                }
-            }
-          clauses << "0" << endl;
-          nb_clauses++;
-        }
-    }
-  file << "p cnf " << size << " " << nb_clauses << endl;
-  clauses.flush();
-  file << clauses.str() << endl;
-  file.flush();
 
+  //If two nodes don't got a adjacent edge, they can't be
+  //both in the same clique.
+  for (int i = 0; i < size; ++i)
+    for (int j = i + 1; j < size; ++j)
+      if (!matrix[i][j] && i != j)
+        for (position = 0; position < wanted_size; ++position)
+          for (int l = 0; l < wanted_size; ++l)
+            {
+              result << -(position * size + i + 1) << " "
+                  << -(l * size + j + 1) << " 0\n";
+              nb_clause++;
+            }
+  file << "p cnf " << size * wanted_size << " " << nb_clause << endl;
+  file << result.str();;
   file.close();
+
 }
 
 /*
@@ -342,27 +315,11 @@ invert_matrix(bool **matrix, int size)
  * This function compute the complemetary graph et check if there is a clique.
  */
 void
-independent_set(bool **matrix, int size, ofstream &file)
+independent_set(bool **matrix, int size, int wanted_size, ofstream &file)
 {
-  if (size == 2)
-    {
-      ostringstream clauses;
-      clauses.clear();
-      file << "p cnf " << 2 << " " << 3 << endl;
-      clauses << "1 2 0" << endl;
-      clauses << "-1 -2 0" << endl;
-      clauses.flush();
-      file << clauses.str() << endl;
-      file.flush();
+  invert_matrix(matrix, size);
 
-      file.close();
-    }
-  else
-    {
-      invert_matrix(matrix, size);
-
-      clique(matrix, size, file);
-    }
+  clique(matrix, size, wanted_size, file);
 }
 
 /*
@@ -370,11 +327,11 @@ independent_set(bool **matrix, int size, ofstream &file)
  * and the biggest clique on this graph
  */
 void
-vertex_cover(bool **matrix, int size, ofstream &file)
+vertex_cover(bool **matrix, int size, int wanted_size, ofstream &file)
 {
   invert_matrix(matrix, size);
 
-  clique(matrix, size, file);
+  clique(matrix, size, size - wanted_size, file);
 }
 
 /*
@@ -386,30 +343,29 @@ hamitonian_common(ostringstream &result, bool **matrix, int size,
 {
 
   result << "p cnf " << size << " " << size << endl;
-  int i, j, k;
 
   //Each node of graph is at least at one position
-  for (i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
     {
-      for (k = 0; k < size; ++k)
+      for (int k = 0; k < size; ++k)
         result << i * size + k + 1 << " ";
 
       result << "0\n";
     }
 
   //Each position is associated with at least one node
-  for (i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
     {
-      for (k = 0; k < size; ++k)
+      for (int k = 0; k < size; ++k)
         result << k * size + i + 1 << " ";
 
       result << "0\n";
     }
 
   //Two nodes can't got the same position
-  for (i = 0; i < size; ++i)
-    for (j = 0; j < size - 1; ++j)
-      for (k = j + 1; k < size; ++k)
+  for (int i = 0; i < size; ++i)
+    for (int j = 0; j < size - 1; ++j)
+      for (int k = j + 1; k < size; ++k)
         {
           result << "-" << j * size + i + 1 << " -" << k * size + i + 1
               << " 0\n";
@@ -439,9 +395,7 @@ hamiltonian_path(bool **matrix, int size, ofstream &file)
               << " 0\n" << "-" << j * size + i + 2 << " -" << k * size + i + 1
               << " 0\n";
 
-  string res = result.str();
-
-  file << res;
+  file << result.str();
   file.close();
 }
 
@@ -491,18 +445,16 @@ usage()
   cout << endl;
 
   cout << "troisième problème couverture de sommets " << endl;
-  cout << "renvoit la plus petite couverture de sommet" << endl;
-  cout << "$>amr <ficher de graph> 3" << endl;
+  cout << "affiche une couverture de sommet de taille k si elle existe" << endl;
+  cout << "$>amr <ficher de graph> 3 k" << endl;
   cout << endl;
 
   cout << "quatrième problème clique " << endl;
-  cout << "renvoit la plus grande clique" << endl;
   cout << "affiche une clique de taille t si elle existe" << endl;
   cout << "$>amr <ficher de graph> 4 t" << endl;
   cout << endl;
 
   cout << "cinquième problème ensemble indépendant " << endl;
-  cout << "renvoit le plus grand ensemble indépendant " << endl;
   cout << "affiche un ensemble indépendant de taille t si il existe" << endl;
   cout << "$>amr <ficher de graph> 5 t" << endl;
   cout << endl;
@@ -597,49 +549,18 @@ void
 analyse_clique(vector<bool> &var, int wanted_size)
 {
   int size = var.size();
-  int clique_size = 0;
 
   if (size == 0)
-    cout << "le graph n'a pas de clique" << endl;
+    cout << "le graph n'a pas de clique de taille " << wanted_size << endl;
   else
     {
-      cout << "les sommets suivants font partie de la plus grande clique : "
-          << endl;
+      cout << "Voici une clique de taille " << wanted_size << " :" << endl;
 
       for (int i = 0; i < size; ++i)
         if (var[i])
-          {
-            cout << i << " ";
-            clique_size++;
-          }
-
-      cout << endl;
-
-      if (wanted_size > clique_size)
-        {
-          cout << "La plus grande clique est de taille " << clique_size
-              << " une clique de taille " << wanted_size
-              << " n'existe pas dans ce graph." << endl;
-        }
-      else
-        {
-          cout << "Voici une clique de taille " << wanted_size << " :" << endl;
-
-          int i = 0;
-          int found = 0;
-
-          while (i < size && found < wanted_size)
-            {
-              if (var[i])
-                {
-                  cout << i << " ";
-                  found++;
-                }
-              i++;
-            }
-        }
-      cout << endl;
+          cout << i % (size / wanted_size) << " ";
     }
+  cout << endl;
 }
 
 /*
@@ -650,51 +571,20 @@ void
 analyse_independent_set(vector<bool> &var, int wanted_size)
 {
   int size = var.size();
-  int set_size = 0;
 
   if (size == 0)
-    cout << "le graph n'a pas d'ensemble indépendant" << endl;
+    cout << "le graph n'a pas d'ensemble indépendant de taille " << wanted_size
+        << endl;
   else
     {
-      cout
-          << "les sommets suivants font partie du plus grand ensemble indépendant : "
+      cout << "Voici un ensemble indépendant de taille " << wanted_size << " :"
           << endl;
 
       for (int i = 0; i < size; ++i)
         if (var[i])
-          {
-            cout << i << " ";
-            set_size++;
-          }
-
-      cout << endl;
-
-      if (wanted_size > set_size)
-        {
-          cout << "Le plus grand ensemble indépendant est de taille "
-              << set_size << " un ensemble indépedant de taille "
-              << wanted_size << " n'existe pas dans ce graph." << endl;
-        }
-      else
-        {
-          cout << "Voici un ensemble indépendant de taille " << wanted_size
-              << " :" << endl;
-
-          int i = 0;
-          int found = 0;
-
-          while (i < size && found < wanted_size)
-            {
-              if (var[i])
-                {
-                  cout << i << " ";
-                  found++;
-                }
-              i++;
-            }
-        }
-      cout << endl;
+          cout << i % (size / wanted_size) << " ";
     }
+  cout << endl;
 }
 
 /*
@@ -757,16 +647,30 @@ analyse_hamiltonian_circuit(vector<bool> &var, int nb_node)
  *  a vertex_cover.
  */
 void
-anlyse_vertex_cover(vector<bool> &var)
+anlyse_vertex_cover(vector<bool> &var, int nb_node, int wanted_size)
 {
   int size = var.size();
+  bool tab[nb_node];
 
-  cout << "Les sommets suivant forment une couverture de sommet :" << endl;
+  for (int i = 0; i < nb_node; ++i)
+    tab[i] = true;
 
-  for (int i = 0; i < size; ++i)
-    if (!var[i])
-      cout << i << " ";
+  if (size == 0)
+    cout << "le graph n'a pas de couverture de sommets de taille "
+        << wanted_size << endl;
+  else
+    {
+      cout << "Voici une couverture de sommets de taille " << wanted_size
+          << " :" << endl;
 
+      for (int i = 0; i < size; ++i)
+        if (var[i])
+          tab[i % (size / (nb_node - wanted_size))] = false;
+
+      for (int i = 0; i < nb_node; ++i)
+        if (tab[i])
+          cout << i << " ";
+    }
   cout << endl;
 }
 
@@ -818,16 +722,19 @@ main(int argc, char* argv[])
     break;
 
   case 3:
-    vertex_cover(matrix, size, file);
+    if (argc != 4)
+      usage();
+
+    vertex_cover(matrix, size, atoi(argv[3]), file);
     execute_minisat(minisat, result, variables);
-    anlyse_vertex_cover(variables);
+    anlyse_vertex_cover(variables, size, atoi(argv[3]));
     break;
 
   case 4:
     if (argc != 4)
       usage();
 
-    clique(matrix, size, file);
+    clique(matrix, size, atoi(argv[3]), file);
     execute_minisat(minisat, result, variables);
     analyse_clique(variables, atoi(argv[3]));
     break;
@@ -836,7 +743,7 @@ main(int argc, char* argv[])
     if (argc != 4)
       usage();
 
-    independent_set(matrix, size, file);
+    independent_set(matrix, size, atoi(argv[3]), file);
     execute_minisat(minisat, result, variables);
     analyse_independent_set(variables, atoi(argv[3]));
     break;
