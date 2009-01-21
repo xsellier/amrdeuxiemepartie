@@ -3,6 +3,30 @@
 \subsection{Comparaison}
 
 \begin{frame}
+\frametitle{Arbre 5 sommets}
+\begin{center}
+\includegraphics[scale=0.6]{arbre5sommets}
+\end{center}
+\end{frame}
+
+\begin{frame}
+\frametitle{Comparaison entre l'algorithme optimal et l'algorithme 2-approché}
+\begin{block}{Sur un arbre à 5 sommets - Temps d'execution}
+  \begin{itemize}
+  \item Algorithme optimal : 0,016 secondes
+  \item Algorithme 2-approché : 0,003 secondes
+  \end{itemize}
+\end{block}
+\begin{block}{Sur un arbre à 5 sommets - Résultats}
+  \begin{itemize}
+  \item Algorithme optimal : 1 3
+  \item Algorithme 2-approché : 1 3
+  \end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}
 \frametitle{Arbre 9 sommets}
 \begin{center}
 \includegraphics[scale=0.7]{arbre9sommets}
@@ -37,37 +61,69 @@
 \frametitle{Comparaison entre l'algorithme optimal et l'algorithme 2-approché}
 \begin{block}{Sur un arbre à 15 sommets - Temps d'execution}
   \begin{itemize}
-  \item Algorithme optimal : 0,022 secondes
-  \item Algorithme 2-approché : 0,003 secondes
+  \item Algorithme optimal : 0,030 secondes
+  \item Algorithme 2-approché : 0,007 secondes
   \end{itemize}
 \end{block}
 \begin{block}{Sur un arbre à 15 sommets - Résultats}
   \begin{itemize}
-  \item Algorithme optimal : 6 5 4 3 0
-  \item Algorithme 2-approché : 6 5 4 3 2 1 0
+  \item Algorithme optimal : 0 3 4 5 6
+  \item Algorithme 2-approché : 0 3 4 5 6
   \end{itemize}
 \end{block}
 \end{frame}
 
 \begin{frame}
-\frametitle{Arbre 5 sommets}
+\frametitle{Graphe 20 sommets}
 \begin{center}
-\includegraphics[scale=0.6]{arbre5sommets}
+\includegraphics[scale=0.6]{graphe20sommets}
 \end{center}
 \end{frame}
 
 \begin{frame}
 \frametitle{Comparaison entre l'algorithme optimal et l'algorithme 2-approché}
-\begin{block}{Sur un arbre à 5 sommets - Temps d'execution}
+\begin{block}{Sur un graphe à 20 sommets - Temps d'execution}
   \begin{itemize}
-  \item Algorithme optimal : 0,002 secondes
-  \item Algorithme 2-approché : 0,002 secondes
+  \item Algorithme optimal : 0,028 secondes
+  \item Algorithme 2-approché : 0,006 secondes
   \end{itemize}
 \end{block}
-\begin{block}{Sur un arbre à 5 sommets - Résultats}
+\begin{block}{Sur un graphe à 20 sommets - Résultats}
   \begin{itemize}
-  \item Algorithme optimal : 3 1
-  \item Algorithme 2-approché : 3 2 1 0
+  \item Algorithme optimal : 1 2 4 7 8 9 13 14 16 19 (10 sommets)
+  \item Algorithme 2-approché : 0 1 2 5 7 8 9 11 12 13 14 16 18 (13 sommets)
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Comparaison entre l'algorithme optimal et l'algorithme 2-approché}
+\begin{block}{Sur un graphe à 40 sommets - Temps d'execution}
+  \begin{itemize}
+  \item Algorithme optimal : 0,078 secondes
+  \item Algorithme 2-approché : 0,008 secondes
+  \end{itemize}
+\end{block}
+\begin{block}{Sur un graphe à 40 sommets - Résultats}
+  \begin{itemize}
+  \item Algorithme optimal : 34 sommets
+  \item Algorithme 2-approché : 37 sommets
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Comparaison entre l'algorithme optimal et l'algorithme 2-approché}
+\begin{block}{Sur un graphe à 100 sommets - Temps d'execution}
+  \begin{itemize}
+  \item Algorithme optimal : 0,268 secondes
+  \item Algorithme 2-approché : 0,015 secondes
+  \end{itemize}
+\end{block}
+\begin{block}{Sur un graphe à 100 sommets - Résultats}
+  \begin{itemize}
+  \item Algorithme optimal : 95 sommets
+  \item Algorithme 2-approché : 99 sommets
   \end{itemize}
 \end{block}
 \end{frame}
