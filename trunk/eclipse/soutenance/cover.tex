@@ -1,0 +1,85 @@
+% -*- mode: latex; coding: latin-1-unix -*- %
+
+\begin{frame}[fragile]
+\frametitle{Algorithme linéaire}
+\begin{block}{Variables}
+\begin{verbatim}
+
+liste feuilles;
+liste couverture;
+int[] pere;
+int[] nbFils;
+int racine;
+
+\end{verbatim}
+\end{block}
+
+
+\begin{block}{Initialisation}
+\begin{verbatim}
+function void algo(){
+int i := feuilles.premier();
+Si i := racine;
+  alors fin algo;
+\end{verbatim}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Algorithme linéaire}
+\begin{block}{Traitement}
+\begin{verbatim}
+int j := pere[i];
+int k := pere[j];
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Algorithme linéaire}
+\begin{block}{Destruction}
+\begin{verbatim}
+feuilles.supprimerEnTete();
+couverture.ajouterEnTete(j);
+
+pere[j] := 0;
+pere[i] := 0;
+\end{verbatim}
+\end{block}
+
+\begin{block}{Fin}
+\begin{verbatim}
+Si k != 0
+   alors nbFils[k]--;
+         Si nbFils[k] = 0
+            alors feuilles.ajouterEnTete(k);
+algo();
+}
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Algorithme linéaire}
+\begin{block}{Exemple}
+\begin{center}
+\includegraphics[scale=0.7]{arbre9sommets}
+\end{center}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Algorithme linéaire}
+\begin{block}{Fichier gengraph}
+\begin{verbatim}
+
+\end{verbatim}
+\end{block}
+
+\begin{block}{Résultat}
+\begin{verbatim}
+
+\end{verbatim}
+\end{block}
+\end{frame}
