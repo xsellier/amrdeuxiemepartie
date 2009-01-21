@@ -1,5 +1,4 @@
 #include <iostream>
-#include <list>
 #include <stdlib.h>
 #include <fstream>
 #include <sys/stat.h>
@@ -14,7 +13,7 @@
 using namespace std;
 
 /*
- * Test the assertion, if true, exit the program with a message.
+ * Test the assertion, if true, exit the programme with a message.
  */
 void
 perror_and_exit_whenever(int assertion, string msg)
@@ -68,6 +67,15 @@ max_node(vector<pair<int, int> > &v)
 }
 
 /*
+ * This function insert an isolated edge
+ */
+void
+insert_isolated_edge(string edge, vector<pair<int, int> > &v)
+{
+  v.push_back(pair<int, int> (atoi(edge.c_str()), atoi(edge.c_str())));
+}
+
+/*
  * This function insert in the vector the edge contained in the string
  */
 void
@@ -115,7 +123,8 @@ edge_spliter(string edge, vector<pair<int, int> > &v)
 
       insert_edge(edge.substr(prec), v);
     }
-  //else isolate_edge => don't care
+  else
+    insert_isolated_edge(edge, v);
 }
 
 /*
@@ -149,248 +158,603 @@ graph_init(char* filename, vector<pair<int, int> > &v)
   return max_node(v);
 }
 
+/*
+ * This function print a vector<pair<int,int> > in the standard output
+ */
+void
+print_vector(vector<pair<int, int> > &v)
+{
+  int size = v.size();
+
+  for (int i = 0; i < size; ++i)
+    cout << v.at(i).first << " " << v.at(i).second << endl;
+}
+
+/*
+ * This function print a matrix in the standard output
+ */
+void
+print_matrix(bool** matrix, int size)
+{
+  for (int i = 0; i < size; ++i)
+    {
+      for (int j = 0; j < size; ++j)
+        cout << matrix[i][j];
+
+      cout << endl;
+    }
+}
+
+/*
+ * This function apply the reduction of k-color to sat, and write it in the
+ * file flux
+ */
+void
+k_color(bool** matrix, int size, int k, ofstream &file)
+{
+
+  int nb_clauses = 0;
+
+  ostringstream clauses;
+
+  clauses.clear();
+
+  for (int i = 0; i < size; ++i)
+    {
+
+      //for every edge we check if two neighbour nodes don't have the same color
+      for (int j = 0; j < size; ++j)
+        if (matrix[i][j])
+          for (int l = 0; l < k; ++l)
+            {
+              clauses << -(i * k + l) - 1 << " " << -(j * k + l) - 1 << " 0 \n";
+              nb_clauses++;
+            }
+
+      //we check that every node have one color
+      for (int l = 0; l < k; ++l)
+        clauses << (i * k + l) + 1 << " ";
+
+      clauses << "0 \n";
+      nb_clauses++;
+
+      //we check that two node can't have more than one color
+      for (int l = 0; l < k; ++l)
+        {
+          for (int m = 0; m < l; ++m)
+            {
+              clauses << -(i * k + l) - 1 << " " << -(i * k + m) - 1 << " 0 \n";
+              nb_clauses++;
+            }
+
+          for (int m = l + 1; m < k; ++m)
+            {
+              clauses << -(i * k + l) - 1 << " " << -(i * k + m) - 1 << " 0 \n";
+              nb_clauses++;
+            }
+        }
+    }
+
+  file << "p cnf " << size * k << " " << nb_clauses << endl;
+  clauses.flush();
+  file << clauses.str() << endl;
+  file.flush();
+  file.close();
+}
+
+void
+clique(bool **matrix, int size, int wanted_size, ofstream &file)
+{
+  ostringstream result;
+
+  int position;
+  int nb_clause = 0;
+
+  //Each position is associated with at least one node
+  for (position = 0; position < wanted_size; ++position)
+    {
+      for (int i = 0; i < size; ++i)
+        result << position * size + i + 1 << " ";
+
+      result << "0\n";
+      nb_clause++;
+    }
+
+  //Two nodes can't got the same position
+  for (position = 0; position < wanted_size; ++position)
+    for (int i = 0; i < size; ++i)
+      for (int j = i + 1; j < size; ++j)
+        {
+          result << -(position * size + i + 1) << " " << -(position * size + j
+              + 1) << " 0\n";
+          nb_clause++;
+        }
+
+  //One node can't have two different positions
+  for (int i = 0; i < size; ++i)
+    for (position = 0; position < wanted_size; ++position)
+      for (int l = position + 1; l < wanted_size; ++l)
+        {
+          result << -(position * size + i + 1) << " " << -(l * size + i + 1)
+              << " 0\n";
+          nb_clause++;
+        }
+
+  //If two nodes don't got a adjacent edge, they can't be
+  //both in the same clique.
+  for (int i = 0; i < size; ++i)
+    for (int j = i + 1; j < size; ++j)
+      if (!matrix[i][j] && i != j)
+        for (position = 0; position < wanted_size; ++position)
+          for (int l = 0; l < wanted_size; ++l)
+            {
+              result << -(position * size + i + 1) << " "
+                  << -(l * size + j + 1) << " 0\n";
+              nb_clause++;
+            }
+  file << "p cnf " << size * wanted_size << " " << nb_clause << endl;
+  file << result.str();;
+  file.close();
+
+}
+
+/*
+ * This function invert the boolean matrix, compute the complémentary
+ * graph
+ */
+void
+invert_matrix(bool **matrix, int size)
+{
+  for (int i = 0; i < size; ++i)
+    for (int j = 0; j < size; ++j)
+      if (i != j)
+        matrix[i][j] = !(matrix[i][j]);
+}
+
+/*
+ * This function compute the complemetary graph et check if there is a clique.
+ */
+void
+independent_set(bool **matrix, int size, int wanted_size, ofstream &file)
+{
+  invert_matrix(matrix, size);
+
+  clique(matrix, size, wanted_size, file);
+}
+
+/*
+ * This function compute the complementary graph
+ * and the biggest clique on this graph
+ */
+void
+vertex_cover(bool **matrix, int size, int wanted_size, ofstream &file)
+{
+  invert_matrix(matrix, size);
+
+  clique(matrix, size, size - wanted_size, file);
+}
+
+/*
+ * This function is a common part from hamiltonian_path et hamiltonian_circuit
+ */
+void
+hamitonian_common(ostringstream &result, bool **matrix, int size,
+    ofstream &file)
+{
+
+  result << "p cnf " << size << " " << size << endl;
+
+  //Each node of graph is at least at one position
+  for (int i = 0; i < size; ++i)
+    {
+      for (int k = 0; k < size; ++k)
+        result << i * size + k + 1 << " ";
+
+      result << "0\n";
+    }
+
+  //Each position is associated with at least one node
+  for (int i = 0; i < size; ++i)
+    {
+      for (int k = 0; k < size; ++k)
+        result << k * size + i + 1 << " ";
+
+      result << "0\n";
+    }
+
+  //Two nodes can't got the same position
+  for (int i = 0; i < size; ++i)
+    for (int j = 0; j < size - 1; ++j)
+      for (int k = j + 1; k < size; ++k)
+        {
+          result << "-" << j * size + i + 1 << " -" << k * size + i + 1
+              << " 0\n";
+        }
+}
+
+//To code Hamiltonian path, we guess that
+//the 1...n numbers represent positions for the first node,
+//the n+1...2n numbers represent positions for the second,
+//and etc....
+
+void
+hamiltonian_path(bool **matrix, int size, ofstream &file)
+{
+
+  ostringstream result;
+
+  hamitonian_common(result, matrix, size, file);
+
+  //If two nodes don't got a adjacent edge, they can't be
+  //consecutive in hamiltonian path.
+  for (int j = 0; j < size; ++j)
+    for (int k = j; k < size; ++k)
+      if (matrix[j][k] == false && j != k)
+        for (int i = 0; i < size - 1; ++i)
+          result << "-" << j * size + i + 1 << " -" << k * size + i + 2
+              << " 0\n" << "-" << j * size + i + 2 << " -" << k * size + i + 1
+              << " 0\n";
+
+  file << result.str();
+  file.close();
+}
+
+//To code Hamiltonian circuit, we take same algorithm as
+//for Hamiltonian path, but we add clauses saying that
+//the node which is at first position is too the last node.
+
+void
+hamiltonian_circuit(bool **matrix, int size, ofstream &file)
+{
+
+  ostringstream result;
+
+  hamitonian_common(result, matrix, size, file);
+
+  //If two nodes don't got a adjacent edge, they can't be
+  //consecutive in hamiltonian path.
+  //For Hamiltonian circuit, more, they can't be the first and the last.
+  for (int j = 0; j < size; ++j)
+    for (int k = j; k < size; ++k)
+      if (matrix[j][k] == false && j != k)
+        {
+          for (int i = 0; i < size - 1; ++i)
+            result << "-" << j * size + i + 1 << " -" << k * size + i + 2
+                << " 0\n" << "-" << j * size + i + 2 << " -" << k * size + i
+                + 1 << " 0\n";
+          //For Hamiltonian circuit
+          result << "-" << j * size + 1 << " -" << (k + 1) * size << " 0\n"
+              << "-" << (j + 1) * size << " -" << k * size + 1 << " 0\n";
+        }
+
+  string res = result.str();
+
+  file << res;
+  file.close();
+}
+
 void
 usage()
 {
+  cout << "premier problème k-colorabilité " << endl;
+  cout << "$>amr <ficher de graph> 1 k" << endl;
+  cout << endl;
+
+  cout << "second problème circuit hamiltonien " << endl;
+  cout << "$>amr <ficher de graph> 2 " << endl;
+  cout << endl;
+
+  cout << "troisième problème couverture de sommets " << endl;
+  cout << "affiche une couverture de sommet de taille k si elle existe" << endl;
+  cout << "$>amr <ficher de graph> 3 k" << endl;
+  cout << endl;
+
+  cout << "quatrième problème clique " << endl;
+  cout << "affiche une clique de taille t si elle existe" << endl;
+  cout << "$>amr <ficher de graph> 4 t" << endl;
+  cout << endl;
+
+  cout << "cinquième problème ensemble indépendant " << endl;
+  cout << "affiche un ensemble indépendant de taille t si il existe" << endl;
+  cout << "$>amr <ficher de graph> 5 t" << endl;
+  cout << endl;
+
+  cout << "bonus chemin hamiltonien " << endl;
+  cout << "$>amr <ficher de graph> 6 " << endl;
+  cout << endl;
+
   exit(EXIT_SUCCESS);
 }
 
+/*
+ * Add a variable in the vector, true if it's positive and false if négative
+ */
 void
-depth_first_search(bool** matrix, int size, int* cover)
+add_var(string text_var, vector<bool> &var)
 {
-  int i, j, k;
-  int nb_vertex = 1; // nb de sommet dans la couverture;
-  for (i = 0; i < size; ++i)
-    cover[i] = -1;
-  i = 0;
-  j = i + 1;
-  cover[0] = 0; // on initialise le père, la racine.
-  do
-    {
-      if (matrix[i][j])
-        { // si le noeud i a un fils
-          matrix[i][j] = 0;
-          if (cover[j] == -1)
-            {
-              cover[j] = i;
-              i = j;
-              j = 0; // important pour bien vérifier tous les fils
-              nb_vertex++;
-            }
-          else
-            {
-              j++; // pour ne pas modifier un noeud déjà parcouru
-            }
-        }
-      else
-        {
-          j++;
-          if (j >= size)
-            {
-              if (i != cover[i])
-                { // le noeud a été totallement parcouru
-                  i = cover[i]; // on remonte a son père
-                  j = 0;
-                }
-              else
-                { // dans le cas ou l'on bouclerait sur le même noeud
-                  k = 0;
-                  while (k < size)
-                    {
-                      if (cover[k] == -1)
-                        { // on cherche un noeud non traité
-                          nb_vertex++;
-                          cover[k] = k;
-                          i = k;
-                          j = 0;
-                          k = size; // pour casser la boucle
-                        }
-                      k++;
-                    }
-                }
-            }
-        }
-    }
-  while (nb_vertex < size);
+  var.push_back(text_var[0] != '-');
 }
 
+/*
+ * This functions opens the result file of minisat split and insert variables and their values
+ * in the vector.
+ */
 void
-tree_cover(int size, int tree[], bool* cover)
+get_var_result(vector<bool> &var, string result)
 {
-  for (int i = 0; i < size; ++i)
-    // initialisation
-    cover[i] = false;
-  for (int i = 0; i < size; ++i)
-    cover[tree[i]] = true; // met a 1 tous les noeuds faisant partis de la couverture
-}
+  ifstream file(result.c_str(), ios::in);
 
-void
-tree_cover(int size, int tree[], list<int> cover)
-{
-  for (int i = 0; i < size; ++i)
-    cover.push_front(tree[i]);// met les noeuds faisant partie de la couverture dans la liste
-}
+  string line;
 
-void
-tree_vc(int father[], int nb_sons[], list<int> &leaf, bool vertex_cover[])
-{
-  //on prend la première feuille de libre.
-  int i = leaf.front();
+  perror_and_exit_whenever(!file, "Erreur à l'ouverture du fichier");
 
-  //on considère que 0 est toujours la racine car il faut bien en choisir un
-  if (i == 0 || leaf.size() <= 0)
+  getline(file, line, '\n');
+
+  //If not satisfiable we stop the function
+  if (line.find("UNSAT") != string::npos)
     return;
 
-  int j = father[i];
-  int k = father[j];
-  // je retire la feuille pour ne pas la retraiter
-  leaf.pop_front();
-
-  vertex_cover[j] = true;
-
-  //on casse l'arête entre i et j
-  father[i] = -1;
-  //on casse l'arête entre j et k
-  father[j] = -1;
-
-  //si j n'a pas de père
-  if (k != -1)
+  while (getline(file, line, '\n'))
     {
-      nb_sons[k]--;
-      //si k devient une feuille
-      if (nb_sons[k] == 0)
-        leaf.push_front(k);
-    }
+      size_t prec = 0;
+      size_t found;
 
-  //on rappelle la fonction
-  tree_vc(father, nb_sons, leaf, vertex_cover);
-}
-
-void
-init_tree_vc(int father[], int nb_sons[], bool vertex_cover[], list<int> &leaf,
-    int size, vector<pair<int, int> > edge)
-{
-  for (int i = 0; i < size; ++i)
-    {
-      father[i] = -1;
-      nb_sons[i] = 0;
-      vertex_cover[i] = false;
-    }
-
-  int v_size = edge.size();
-
-  for (int i = 0; i < v_size; ++i)
-    {
-      father[edge.at(i).second] = edge.at(i).first;
-      nb_sons[edge.at(i).first]++;
-    }
-
-  for (int i = 0; i < size; ++i)
-    if (nb_sons[i] == 0)
-      leaf.push_front(i);
-}
-
-void
-couplage(vector<pair<int, int> > edge, bool cover[], int size)
-{
-  for (int i = 0; i < size; ++i)
-    cover[i] = false;
-
-  int v_size = edge.size();
-
-  for (int i = 0; i < v_size; ++i)
-    {
-      if (!cover[edge.at(i).first] && !cover[edge.at(i).second])
+      found = line.find_first_of(" ");
+      while (found != string::npos)
         {
-          cover[edge.at(i).first] = true;
-          cover[edge.at(i).second] = true;
+          add_var(line.substr(prec, found - prec), var);
+          prec = found + 1;
+          found = line.find_first_of(" ", prec);
         }
     }
+
+  file.close();
+}
+
+/*
+ * This function call minisat, wait for the result and call get_var_result
+ */
+void
+execute_minisat(string minisat, string result, vector<bool> &var)
+{
+  string cmd = "./minisat " + minisat + " " + result;
+
+  system(cmd.c_str());
+  get_var_result(var, result);
+}
+
+/*
+ * This function read a vector of variables and gives the color of each node
+ */
+void
+analyse_k_color(vector<bool> &var, int k)
+{
+  int size = var.size();
+
+  if (size == 0)
+    cout << "le graph n'est pas " << k << " coloriable" << endl;
+
+  for (int i = 0; i < size; i = i + k)
+    for (int j = i; j < i + k; ++j)
+      if (var[j])
+        cout << "le sommet " << (int) (i / k) << " a la couleur " << j - i
+            << endl;
+
+}
+
+/*
+ * This function read a vector of variables and tells which of them are in the biggest clique
+ */
+void
+analyse_clique(vector<bool> &var, int wanted_size)
+{
+  int size = var.size();
+
+  if (size == 0)
+    cout << "le graph n'a pas de clique de taille " << wanted_size << endl;
+  else
+    {
+      cout << "Voici une clique de taille " << wanted_size << " :" << endl;
+
+      for (int i = 0; i < size; ++i)
+        if (var[i])
+          cout << i % (size / wanted_size) << " ";
+    }
+  cout << endl;
+}
+
+/*
+ * This function read a vector of variables, and tells which of them are in
+ * the biggest independant set
+ */
+void
+analyse_independent_set(vector<bool> &var, int wanted_size)
+{
+  int size = var.size();
+
+  if (size == 0)
+    cout << "le graph n'a pas d'ensemble indépendant de taille " << wanted_size
+        << endl;
+  else
+    {
+      cout << "Voici un ensemble indépendant de taille " << wanted_size << " :"
+          << endl;
+
+      for (int i = 0; i < size; ++i)
+        if (var[i])
+          cout << i % (size / wanted_size) << " ";
+    }
+  cout << endl;
+}
+
+/*
+ * This function is a common part of analyse_hamiltonian_path and analyse_hamiltonian_circuit.
+ * It displays nodes in the correct order
+ */
+void
+analyse_hamiltonian_common(vector<bool> &var, int nb_node, int size)
+{
+  int order[nb_node];
+
+  for (int i = 0; i < size; i = i + nb_node)
+    for (int j = i; j < i + nb_node; ++j)
+      if (var[j])
+        order[j - i] = (int) (i / nb_node);
+
+  for (int i = 0; i < nb_node; ++i)
+    cout << order[i] << " ";
+
+  cout << endl;
+}
+
+/*
+ * This function read a vector of variables and tells which of them are on an hamiltinian path
+ */
+void
+analyse_hamiltonian_path(vector<bool> &var, int nb_node)
+{
+  int size = var.size();
+
+  if (size == 0)
+    cout << "le graph n'a pas de chemin hamiltonien" << endl;
+  else
+    {
+      cout << "le chemin hamiltonien est : " << endl;
+      analyse_hamiltonian_common(var, nb_node, size);
+    }
+}
+
+/*
+ * This function read a vector of variables and tells which of them are on an hamiltinian
+ * circuit
+ */
+void
+analyse_hamiltonian_circuit(vector<bool> &var, int nb_node)
+{
+  int size = var.size();
+
+  if (size == 0)
+    cout << "le graph n'a pas de circuit hamiltonien" << endl;
+  else
+    {
+      cout << "le circuit hamiltonien est : " << endl;
+      analyse_hamiltonian_common(var, nb_node, size);
+    }
+}
+
+/*
+ * This function read a vector of variables and tells which of them are
+ *  a vertex_cover.
+ */
+void
+anlyse_vertex_cover(vector<bool> &var, int nb_node, int wanted_size)
+{
+  int size = var.size();
+  bool tab[nb_node];
+
+  for (int i = 0; i < nb_node; ++i)
+    tab[i] = true;
+
+  if (size == 0)
+    cout << "le graph n'a pas de couverture de sommets de taille "
+        << wanted_size << endl;
+  else
+    {
+      cout << "Voici une couverture de sommets de taille " << wanted_size
+          << " :" << endl;
+
+      for (int i = 0; i < size; ++i)
+        if (var[i])
+          tab[i % (size / (nb_node - wanted_size))] = false;
+
+      for (int i = 0; i < nb_node; ++i)
+        if (tab[i])
+          cout << i << " ";
+    }
+  cout << endl;
 }
 
 int
 main(int argc, char* argv[])
 {
+
   if (argc < 3)
     usage();
 
+  //fichier contenant le graph que l'on va passer à minisat.
+  string minisat = "./minisat.txt";
+  //fichier où minisat va remplir le résultat
+  string result = "./result.txt";
   //vecteur servant à stoquer les arrêtes
   vector<pair<int, int> > edge;
   //vecteur servant à stoker les valeurs des variables renvoyées par minisat.
   vector<bool> variables;
 
   int size = graph_init(argv[1], edge) + 1;
+  bool** matrix;
 
-  list<int> leaf;
-  list<int> vc;
-  list<int>::iterator vc_iterator;
+  matrix = new bool*[size];
+
+  for (int i = 0; i < size; ++i)
+    matrix[i] = new bool[size];
+
+  fill_matrix(matrix, edge, size);
+
+  ofstream file(minisat.c_str());
 
   int pb = atoi(argv[2]);
 
   switch (pb)
     {
   case 1:
-    {
-      int father[size];
-      int sons[size];
-      bool vertex_cover[size];
+    if (argc != 4)
+      usage();
 
-      init_tree_vc(father, sons, vertex_cover, leaf, size, edge);
-      tree_vc(father, sons, leaf, vertex_cover);
+    k_color(matrix, size, atoi(argv[3]), file);
+    execute_minisat(minisat, result, variables);
+    analyse_k_color(variables, atoi(argv[3]));
+    break;
 
-      for (int i = 0; i < size; ++i)
-        if (vertex_cover[i])
-          vc.push_front(i);
-
-      cout << "Les sommets suivants sont dans la couverture : ";
-      for (vc_iterator = vc.begin(); vc_iterator != vc.end(); ++vc_iterator)
-        cout << *vc_iterator << " ";
-
-      cout << endl;
-
-      break;
-    }
   case 2:
-    {
-      int* tree;
-      tree = new int[size];
-      bool* cover;
-      cover = new bool[size];
-      bool** matrix;
-      matrix = new bool*[size];
+    hamiltonian_circuit(matrix, size, file);
+    execute_minisat(minisat, result, variables);
+    analyse_hamiltonian_circuit(variables, size);
+    break;
 
-      for (int i = 0; i < size; ++i)
-        matrix[i] = new bool[size];
-
-      fill_matrix(matrix, edge, size);
-      depth_first_search(matrix, size, tree);
-      tree_cover(size, tree, cover);
-
-      //      for (int i = 0; i < size; ++i)
-      //  cout << "Le noeud " << i << " a pour père " << tree[i] << endl;
-      cout << "Le(s) noeud(s) fait/font parti(s) de la couverture" << endl;
-      for (int i = 0; i < size; ++i)
-        {
-          if (cover[i])
-            cout << i << " ";
-        }
-      cout << endl;
-      
-      break;
-    }
   case 3:
-    {
-      bool cover[size];
-      couplage(edge, cover, size);
-      cout << "Le(s) noeud(s) fait/font parti(s) de la couverture" << endl;
-      for (int i = 0; i < size; ++i)
-        if (cover[i])
-          cout << i << " ";
-      cout << endl;
-      
-      break;
-    }
+    if (argc != 4)
+      usage();
+
+    vertex_cover(matrix, size, atoi(argv[3]), file);
+    execute_minisat(minisat, result, variables);
+    anlyse_vertex_cover(variables, size, atoi(argv[3]));
+    break;
+
+  case 4:
+    if (argc != 4)
+      usage();
+
+    clique(matrix, size, atoi(argv[3]), file);
+    execute_minisat(minisat, result, variables);
+    analyse_clique(variables, atoi(argv[3]));
+    break;
+
+  case 5:
+    if (argc != 4)
+      usage();
+
+    independent_set(matrix, size, atoi(argv[3]), file);
+    execute_minisat(minisat, result, variables);
+    analyse_independent_set(variables, atoi(argv[3]));
+    break;
+
+  case 6:
+    hamiltonian_path(matrix, size, file);
+    execute_minisat(minisat, result, variables);
+    analyse_hamiltonian_path(variables, size);
+    break;
     }
 
   exit(EXIT_SUCCESS);
 }
+
