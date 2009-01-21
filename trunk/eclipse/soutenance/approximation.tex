@@ -132,11 +132,30 @@
 \subsection{Instance Critique}
 
 \begin{frame}
-\frametitle{Instance Négative}
-\begin{block}{Bilan du projet XP}
+\frametitle{Arbre à n sommets}
+\begin{center}
+\includegraphics[scale=0.6]{instancecritique}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Sur un arbre de 10 noeuds}
+\begin{block}{Un arbre a un seul fils a chaque fois}
   \begin{itemize}
-  \item Projets réutilisant du code, non adaptés à XP
-  \item Code fourni peu documenté
+  \item Algorithme optimal : 0,005 secondes - 5 sommets
+  \item Algorithme 2-approché : 0,005 secondes - 10 sommets
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{L'algorithme approché en instance critique}
+\begin{block}{Un arbre a un seul fils a chaque fois}
+  \begin{itemize}
+  \item L'algorithme approché va prendre tous les neouds
+  \item Le temps de calcul sera faible, mais la quantité de mémoire
+    consommée sera doublée par rapport à la solution optimale.
   \end{itemize}
 \end{block}
 \end{frame}
