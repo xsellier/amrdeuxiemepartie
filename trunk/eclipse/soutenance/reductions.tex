@@ -1,27 +1,71 @@
 % -*- mode: latex; coding: latin-1-unix -*- %
 
 
-
-\subsection{Instance Positive}
+\subsection{Circuit Hamiltonien}
 
 \begin{frame}
-\frametitle{Instance Positive}
-\begin{block}{Bilan du projet XP}
+\frametitle{Circuit Hamiltonien}
+\begin{block}{Rappel du probl\`eme}
   \begin{itemize}
-  \item Projets réutilisant du code, non adaptés à XP
-  \item Code fourni peu documenté
+  \item Un graphe non orient\'e G,
+  \item Est-ce qu'il existe un circuit qui passe une seule fois par
+    tous les sommets de G ?
   \end{itemize}
 \end{block}
 \end{frame}
 
-\subsection{Instance Négative}
+\begin{frame}
+\frametitle{Circuit Hamiltonien}
+\begin{block}{R\'eduction vers SAT}
+  \begin{itemize}
+  \item Un graphe G
+  \item Soit \textit{$x_{ij}$} la variable bool\'eenne qui est \`a
+    vraie si le sommet \textit{i} se trouve \`a la j-i\`eme position
+  \end{itemize}
+\end{block}
+\end{frame}
 
 \begin{frame}
-\frametitle{Instance Négative}
-\begin{block}{Bilan du projet XP}
+\frametitle{Circuit Hamiltonien}
+\begin{block}{Cinq r\`egles de r\'eduction}
   \begin{itemize}
-  \item Projets réutilisant du code, non adaptés à XP
-  \item Code fourni peu documenté
+  \item 1) $\forall j \in V(G), (x_{1j} \vee x_{2j} \vee \ldots \vee
+    x_{nj})$
+  \item 2) $\forall i$ avec $1 <= i <= n$, $(x_{i1} \vee x_{i2} \vee
+    \ldots \vee x_{in})$
+  \item 3) $\forall i, 1 <= i <= n, \forall {j, k} \in V(G)$, $j \ne
+    k$, $(\neg x_{ij} \vee \neg x_{ik})$
+  \item 4) $\forall i, 1 <= i <= n, \forall {j, k} \in V(G), j,k
+    \notin E(G)$, $(\neg x_{ij} \vee \neg x_{i+1,k})$
+  \item 5) $\forall j,k \in V(G)$, ${j,k} \notin E(G)$, $(\neg x_{1j}
+    \vee \neg x_{nk})$
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\subsection{Examples}
+
+\begin{frame}
+\frametitle{Examples}
+\begin{block}{Instance positive}
+\includegraphics[scale=0.3]{positif.jpeg}
+\end{block}
+\begin{block}{Une r\'eponse de SAT}
+  \begin{itemize}
+  \item Sommet k : variables situ\'ees dans [(k+1)*n+1 ; k*n]
+  \item R\'eponse : 1 8 15 22 29 36 
+  \end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}
+\frametitle{Exemples}
+\begin{block}{Instance n\'egative}
+\includegraphics[scale=0.3]{negatif.jpeg}
+\end{block}
+\begin{block}{R\'eponse de SAT}
+  \begin{itemize}
+  \item Il n'existe pas de circuit hamiltonien.
   \end{itemize}
 \end{block}
 \end{frame}
