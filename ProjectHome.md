@@ -1,0 +1,1 @@
+Implémentation en C++ de divers algorithmes de résolutions de problèmes NP-COMPLETS.
